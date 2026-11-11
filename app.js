@@ -322,31 +322,46 @@
       sparkle.style.color = colors[i % colors.length];
       sparkle.style.fontSize = (8 + Math.random() * 18) + "px";
       layer.append(sparkle);
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 45 + Math.random() * 170;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance - 45;
-      const spin = Math.random() * 540 - 270;
+      const originX = origin.x - window.scrollX;
+      // Spread across the viewport, including when the heart is near an edge.
+      const x = (16 + Math.random() * Math.max(0, window.innerWidth - 32) - originX) * .9;
+      const y = -(65 + Math.random() * 190);
+      const drift = (Math.random() - .5) * 70;
+      const fall = 220 + Math.random() * 180;
+      const spin = Math.random() * 240 - 120;
+      const duration = 3400 + Math.random() * 1100;
       const transform = (dx, dy, scale, rotation) =>
         `translate(-50%, -50%) translate(${dx}px, ${dy}px) rotate(${rotation}deg) scale(${scale})`;
       const frames = reducedMotion ? [
-        { opacity: 0, transform: transform(x * .16, y * .16, .8, 0) },
+        { opacity: 0, transform: transform(x * .06, y * .16, .8, 0) },
         { opacity: 1, offset: .25 },
-        { opacity: 0, transform: transform(x * .16, y * .16, .8, 0) }
-      ] : [
-        { opacity: 0, transform: transform(0, 0, .2, 0) },
-        { opacity: 1, offset: .12 },
-        { opacity: 1, transform: transform(x * .8, y * .8, 1, spin * .6), offset: .55 },
-        { opacity: 0, transform: transform(x, y + 320, .1, spin) }
-      ];
+        { opacity: 0, transform: transform(x * .06, y * .16, .8, 0) }
+      ] : Array.from({ length: 91 }, (_, frame) => {
+        const progress = frame / 90;
+        const seconds = progress * duration / 1000;
+        // One continuous curve: rapid launch loses speed, then gentle drift takes over.
+        const burst = 1 - Math.exp(-seconds / .16);
+        const float = progress * progress;
+        const sway = Math.sin(progress * Math.PI * 2) * 14 * progress;
+        return {
+          offset: progress,
+          opacity: Math.min(1, progress * 35) * (1 - Math.max(0, (progress - .7) / .3)),
+          transform: transform(
+            x * burst + drift * float + sway,
+            y * burst + fall * float,
+            (.25 + .75 * burst) * (1 - .35 * float),
+            spin * burst * .25 + spin * progress * .75
+          )
+        };
+      });
       sparkle.animate(frames, {
-        duration: reducedMotion ? 500 : 1800 + Math.random() * 1000,
-        delay: reducedMotion ? 0 : Math.random() * 160,
-        easing: "cubic-bezier(.15,.65,.35,1)",
+        duration: reducedMotion ? 500 : duration,
+        delay: reducedMotion ? 0 : Math.random() * 100,
+        easing: "linear",
         fill: "both"
       });
     }
-    window.setTimeout(() => layer.remove(), reducedMotion ? 600 : 3100);
+    window.setTimeout(() => layer.remove(), reducedMotion ? 600 : 4700);
   }
 
   async function saveCheck(task, checkbox) {
