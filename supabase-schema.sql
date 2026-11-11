@@ -1,13 +1,9 @@
--- FMTM shared todo list: Google sign-in, one administrator, and invited members.
--- The FMTM owner and administrator account.
+-- FMTM single-account setup: password sign-in for the fixed unibear login.
 
-create table if not exists public.app_members (
-  email text primary key check (email = lower(email)),
-  role text not null check (role in ('admin', 'member')),
-  is_owner boolean not null default false,
-  added_at timestamptz not null default now(),
-  constraint app_members_owner_is_admin check (not is_owner or role = 'admin')
-);
+-- Remove the previous Google-account membership list and its access helpers.
+drop table if exists public.app_members cascade;
+drop function if exists public.fmtm_is_member();
+drop function if exists public.fmtm_is_admin();
 
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
@@ -17,92 +13,50 @@ create table if not exists public.tasks (
   updated_at timestamptz not null default now()
 );
 
-create or replace function public.fmtm_is_member()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.app_members m
-    where m.email = lower((select auth.jwt() ->> 'email'))
-      and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'google'
-  );
-$$;
-
-create or replace function public.fmtm_is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.app_members m
-    where m.email = lower((select auth.jwt() ->> 'email'))
-      and m.role = 'admin'
-      and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'google'
-  );
-$$;
-
-alter table public.app_members enable row level security;
 alter table public.tasks enable row level security;
 
-drop policy if exists "Members can read their own access" on public.app_members;
-create policy "Members can read their own access"
-  on public.app_members for select to authenticated
+drop policy if exists "Members can read tasks" on public.tasks;
+drop policy if exists "Members can add tasks" on public.tasks;
+drop policy if exists "Members can update tasks" on public.tasks;
+drop policy if exists "Members can delete tasks" on public.tasks;
+drop policy if exists "FMTM account can read tasks" on public.tasks;
+drop policy if exists "FMTM account can add tasks" on public.tasks;
+drop policy if exists "FMTM account can update tasks" on public.tasks;
+drop policy if exists "FMTM account can delete tasks" on public.tasks;
+
+create policy "FMTM account can read tasks"
+  on public.tasks for select to authenticated
   using (
-    (email = lower((select auth.jwt() ->> 'email'))
-      and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'google')
-    or (select public.fmtm_is_admin())
+    (select auth.jwt() ->> 'email') = 'pandoranders@gmail.com'
+    and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'email'
   );
 
-drop policy if exists "Admins can add members" on public.app_members;
-create policy "Admins can add members"
-  on public.app_members for insert to authenticated
-  with check ((select public.fmtm_is_admin()) and role = 'member' and not is_owner);
-
-drop policy if exists "Admins can remove members" on public.app_members;
-create policy "Admins can remove members"
-  on public.app_members for delete to authenticated
-  using ((select public.fmtm_is_admin()) and role = 'member' and not is_owner);
-
-drop policy if exists "Members can read tasks" on public.tasks;
-create policy "Members can read tasks"
-  on public.tasks for select to authenticated
-  using ((select public.fmtm_is_member()));
-
-drop policy if exists "Members can add tasks" on public.tasks;
-create policy "Members can add tasks"
+create policy "FMTM account can add tasks"
   on public.tasks for insert to authenticated
-  with check ((select public.fmtm_is_member()));
+  with check (
+    (select auth.jwt() ->> 'email') = 'pandoranders@gmail.com'
+    and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'email'
+  );
 
-drop policy if exists "Members can update tasks" on public.tasks;
-create policy "Members can update tasks"
+create policy "FMTM account can update tasks"
   on public.tasks for update to authenticated
-  using ((select public.fmtm_is_member()))
-  with check ((select public.fmtm_is_member()));
+  using (
+    (select auth.jwt() ->> 'email') = 'pandoranders@gmail.com'
+    and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'email'
+  )
+  with check (
+    (select auth.jwt() ->> 'email') = 'pandoranders@gmail.com'
+    and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'email'
+  );
 
-drop policy if exists "Members can delete tasks" on public.tasks;
-create policy "Members can delete tasks"
+create policy "FMTM account can delete tasks"
   on public.tasks for delete to authenticated
-  using ((select public.fmtm_is_member()));
+  using (
+    (select auth.jwt() ->> 'email') = 'pandoranders@gmail.com'
+    and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'email'
+  );
 
-grant select, insert, delete on public.app_members to authenticated;
 grant select, insert, update, delete on public.tasks to authenticated;
-revoke all on function public.fmtm_is_member() from public, anon;
-revoke all on function public.fmtm_is_admin() from public, anon;
-grant execute on function public.fmtm_is_member() to authenticated;
-grant execute on function public.fmtm_is_admin() to authenticated;
-
--- Only the owner row is an administrator. Admins can add and remove members,
--- but the policies above prevent them from changing or deleting the owner row.
-insert into public.app_members (email, role, is_owner)
-values ('pandoranders@gmail.com', 'admin', true)
-on conflict (email) do update set role = 'admin', is_owner = true;
 
 -- Enable realtime updates for the shared task list (safe to run more than once).
 do $$

@@ -90,29 +90,17 @@
     .auth-gate { background: var(--surface); border: 1px solid rgba(224, 229, 223, .8); border-radius: 20px; box-shadow: var(--shadow); padding: 32px; text-align: center; }
     .auth-gate h2 { margin: 0 0 8px; font-size: 20px; }
     .auth-gate p { margin: 0 auto 18px; max-width: 430px; color: var(--muted); font-size: 14px; line-height: 1.5; }
-    .google-button, .small-button { border: 0; border-radius: 11px; padding: 12px 17px; background: var(--green); color: white; font-size: 13px; font-weight: 650; cursor: pointer; }
-    .google-button:hover, .small-button:hover { background: #315f47; }
-    .google-button:disabled { opacity: .5; cursor: default; }
+    .login-button { border: 0; border-radius: 11px; padding: 12px 17px; background: var(--green); color: white; font-size: 13px; font-weight: 650; cursor: pointer; }
+    .login-button:hover { background: #315f47; }
+    .login-button:disabled { opacity: .5; cursor: default; }
+    .login-form { display: grid; gap: 10px; width: min(100%, 320px); margin: 0 auto; text-align: left; }
+    .login-form label { color: var(--muted); font-size: 12px; }
+    .login-form input { width: 100%; margin-top: 5px; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; outline: 0; }
+    .login-form input:focus { border-color: var(--green); }
     .text-button { border: 0; padding: 7px 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; }
     .text-button:hover { color: var(--ink); }
     .feedback, .status-message { min-height: 18px; margin: 9px 20px 0; color: var(--muted); font-size: 12px; }
     .error-text { color: var(--danger) !important; }
-    .admin-dialog { width: min(100% - 28px, 500px); max-height: min(85vh, 760px); border: 1px solid var(--line); border-radius: 18px; padding: 0; color: var(--ink); background: var(--surface); box-shadow: 0 24px 80px rgba(20, 30, 23, .22); }
-    .admin-dialog::backdrop { background: rgba(25, 35, 28, .38); backdrop-filter: blur(3px); }
-    .dialog-content { padding: 22px; }
-    .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
-    .dialog-head h2 { margin: 0 0 5px; font-size: 20px; }
-    .dialog-head p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
-    .dialog-close { border: 0; background: transparent; color: var(--muted); font-size: 22px; cursor: pointer; }
-    .member-form { display: flex; gap: 8px; margin-bottom: 7px; }
-    .member-form input { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; outline: 0; }
-    .member-form input:focus { border-color: var(--green); }
-    .member-list { list-style: none; margin: 18px 0 0; padding: 0; border-top: 1px solid var(--line); }
-    .member-list li { display: flex; align-items: center; gap: 12px; min-height: 53px; border-bottom: 1px solid var(--line); font-size: 13px; }
-    .member-identity { min-width: 0; flex: 1; overflow-wrap: anywhere; }
-    .member-role { color: var(--muted); font-size: 11px; white-space: nowrap; }
-    .member-remove { border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: var(--danger); cursor: pointer; font-size: 11px; }
-    .member-remove:hover { background: #fbefed; }
     .setup-hint { display: block; margin-top: 13px; color: var(--muted); font-size: 11px; }
     @media (max-width: 540px) {
       .shell { width: min(100% - 24px, 760px); padding-top: 26px; }
@@ -146,17 +134,20 @@
       </div>
       <div class="account-controls">
         <span id="account-label"></span>
-        <button class="text-button" id="admin-open" type="button" hidden>Administrer tilgang</button>
         <button class="text-button" id="sign-out" type="button" hidden>Logg ut</button>
       </div>
     </header>
 
     <section class="auth-gate" id="auth-gate" aria-labelledby="auth-title">
       <h2 id="auth-title">Logg inn p� FMTM</h2>
-      <p>Logg inn med Google for � �pne den delte todo-lista. Bare kontoer som administratoren har lagt til, f�r tilgang.</p>
-      <button class="google-button" id="sign-in" type="button">Fortsett med Google</button>
+      <p>Logg inn med den faste FMTM-kontoen for � �pne todo-lista.</p>
+      <form class="login-form" id="login-form">
+        <label for="username">Brukernavn<input id="username" name="username" value="unibear" autocomplete="username" readonly required></label>
+        <label for="password">Passord<input id="password" name="password" type="password" autocomplete="current-password" required></label>
+        <button class="login-button" id="sign-in" type="submit">Logg inn</button>
+      </form>
       <p class="status-message" id="auth-message" aria-live="polite"></p>
-      <span class="setup-hint">Synkronisering og Google-innlogging m� konfigureres f�r f�rste innlogging.</span>
+      <span class="setup-hint">Samme innlogging gir tilgang fra alle enhetene dine.</span>
     </section>
 
     <div id="app-content" hidden>
@@ -206,23 +197,6 @@
     <p class="bottom-note">Endringer lagres automatisk og vises for alle som har tilgang.</p>
     </div>
 
-    <dialog class="admin-dialog" id="admin-dialog" aria-labelledby="admin-title">
-      <div class="dialog-content">
-        <div class="dialog-head">
-          <div>
-            <h2 id="admin-title">Administrer tilgang</h2>
-            <p>Legg til Google-kontoer som skal kunne bruke den delte lista.</p>
-          </div>
-          <button class="dialog-close" id="admin-close" type="button" aria-label="Lukk">�</button>
-        </div>
-        <form class="member-form" id="admin-form">
-          <input id="member-email" type="email" required autocomplete="off" placeholder="navn@gmail.com" aria-label="Google-kontoens e-postadresse">
-          <button class="small-button" type="submit">Legg til</button>
-        </form>
-        <p class="status-message" id="admin-message" aria-live="polite"></p>
-        <ul class="member-list" id="member-list" aria-label="Kontoer med tilgang"></ul>
-      </div>
-    </dialog>
   </main>
 
   <script src="./app.js"></script>

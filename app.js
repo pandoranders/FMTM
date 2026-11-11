@@ -1,4 +1,6 @@
 (() => {
+  const LOGIN_USERNAME = "unibear";
+  const LOGIN_EMAIL = "pandoranders@gmail.com";
   const config = window.FMTM_SUPABASE_CONFIG || {};
   const form = document.getElementById("add-form");
   const input = document.getElementById("task-input");
@@ -11,16 +13,13 @@
   const filterButtons = [...document.querySelectorAll("[data-filter]")];
   const authGate = document.getElementById("auth-gate");
   const authMessage = document.getElementById("auth-message");
+  const loginForm = document.getElementById("login-form");
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
   const signInButton = document.getElementById("sign-in");
   const signOutButton = document.getElementById("sign-out");
   const appContent = document.getElementById("app-content");
   const accountLabel = document.getElementById("account-label");
-  const adminOpen = document.getElementById("admin-open");
-  const adminDialog = document.getElementById("admin-dialog");
-  const adminForm = document.getElementById("admin-form");
-  const memberEmail = document.getElementById("member-email");
-  const memberList = document.getElementById("member-list");
-  const adminMessage = document.getElementById("admin-message");
   const feedback = document.getElementById("feedback");
 
   let client;
@@ -39,17 +38,11 @@
     feedback.classList.toggle("error-text", isError);
   }
 
-  function setAdminMessage(message, isError = false) {
-    adminMessage.textContent = message;
-    adminMessage.classList.toggle("error-text", isError);
-  }
-
   function showSignedOut(message = "") {
     authGate.hidden = false;
     appContent.hidden = true;
     accountLabel.textContent = "";
     signOutButton.hidden = true;
-    adminOpen.hidden = true;
     if (message) setAuthMessage(message);
   }
 
@@ -168,71 +161,25 @@
     }
   }
 
-  async function loadMembers() {
-    const { data, error } = await client.from("app_members")
-      .select("email,role,is_owner")
-      .order("email");
-    if (error) {
-      setAdminMessage("Kunne ikke hente tilgangslisten.", true);
-      return;
-    }
-    memberList.replaceChildren();
-    for (const member of data || []) {
-      const item = document.createElement("li");
-      const identity = document.createElement("span");
-      identity.className = "member-identity";
-      identity.textContent = member.email;
-      const role = document.createElement("span");
-      role.className = "member-role";
-      role.textContent = member.is_owner ? "Administrator" : "Medlem";
-      item.append(identity, role);
-      if (!member.is_owner) {
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "member-remove";
-        remove.textContent = "Fjern";
-        remove.setAttribute("aria-label", `Fjern tilgang for ${member.email}`);
-        remove.addEventListener("click", () => removeMember(member.email));
-        item.append(remove);
-      }
-      memberList.append(item);
-    }
-  }
-
-  async function removeMember(email) {
-    const { error } = await client.from("app_members").delete().eq("email", email);
-    if (error) {
-      setAdminMessage("Kunne ikke fjerne kontoen. Pr�v igjen.", true);
-      return;
-    }
-    setAdminMessage("Tilgangen er fjernet.");
-    await loadMembers();
-  }
-
   async function handleSession(user) {
     const myVersion = ++authVersion;
     showSignedOut("Sjekker kontotilgang .");
-    const email = (user.email || "").toLowerCase();
-    const { data: membership, error } = await client.from("app_members")
-      .select("email,role")
-      .eq("email", email)
-      .maybeSingle();
     if (myVersion !== authVersion) return;
-    if (error || !membership) {
+    const email = (user.email || "").toLowerCase();
+    const provider = user.app_metadata?.provider;
+    if (email !== LOGIN_EMAIL || provider !== "email") {
       authGate.hidden = false;
       appContent.hidden = true;
-      accountLabel.textContent = email;
+      accountLabel.textContent = "";
       signOutButton.hidden = false;
-      adminOpen.hidden = true;
-      setAuthMessage("Denne Google-kontoen har ikke tilgang til FMTM. Be administratoren legge den til.", true);
+      setAuthMessage("Denne kontoen har ikke tilgang til FMTM.", true);
       return;
     }
 
     authGate.hidden = true;
     appContent.hidden = false;
-    accountLabel.textContent = email;
+    accountLabel.textContent = LOGIN_USERNAME;
     signOutButton.hidden = false;
-    adminOpen.hidden = membership.role !== "admin";
     currentFilter = "all";
     filterButtons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.filter === currentFilter)));
     await loadTasks();
@@ -277,50 +224,28 @@
     await loadTasks();
   });
 
-  signInButton.addEventListener("click", async () => {
-    signInButton.disabled = true;
-    setAuthMessage("Sender deg videre til Google .");
-    const { error } = await client.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.href.split("#")[0] }
-    });
-    if (error) {
-      setAuthMessage("Kunne ikke starte Google-innloggingen. Pr�v igjen.", true);
-      signInButton.disabled = false;
+  loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (usernameInput.value.trim() !== LOGIN_USERNAME) {
+      setAuthMessage("Ugyldig brukernavn eller passord.", true);
+      return;
     }
+    signInButton.disabled = true;
+    setAuthMessage("Logger inn .");
+    const { error } = await client.auth.signInWithPassword({
+      email: LOGIN_EMAIL,
+      password: passwordInput.value
+    });
+    passwordInput.value = "";
+    if (error) {
+      setAuthMessage("Ugyldig brukernavn eller passord.", true);
+    }
+    signInButton.disabled = false;
   });
 
   signOutButton.addEventListener("click", async () => {
     await client.auth.signOut();
     showSignedOut("Du er logget ut.");
-  });
-
-  adminOpen.addEventListener("click", async () => {
-    setAdminMessage("");
-    adminDialog.showModal();
-    await loadMembers();
-  });
-
-  adminForm.addEventListener("submit", async event => {
-    event.preventDefault();
-    const email = memberEmail.value.trim().toLowerCase();
-    if (!email || !email.includes("@")) {
-      setAdminMessage("Skriv inn en gyldig Google-konto.", true);
-      return;
-    }
-    const { error } = await client.from("app_members").insert({ email, role: "member" });
-    if (error) {
-      setAdminMessage(error.code === "23505" ? "Denne kontoen har allerede tilgang." : "Kunne ikke legge til kontoen. Kontroller at databasen er satt opp.", true);
-      return;
-    }
-    memberEmail.value = "";
-    setAdminMessage("Kontoen har n� tilgang. Personen m� logge inn med denne Google-adressen.");
-    await loadMembers();
-  });
-
-  document.getElementById("admin-close").addEventListener("click", () => adminDialog.close());
-  adminDialog.addEventListener("click", event => {
-    if (event.target === adminDialog) adminDialog.close();
   });
 
   if (!config.url || !config.anonKey) {

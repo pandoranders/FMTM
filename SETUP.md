@@ -1,39 +1,34 @@
 # FMTM setup
 
-FMTM is a static web app. Google sign-in and shared task storage are provided by Supabase. The database policies ensure only listed Google accounts can access the shared list.
+FMTM uses Supabase for a single password-protected account and a shared todo list. The app login name is `unibear`; Supabase verifies the password. The password is never stored in the browser code or this repository.
 
-## 1. Create the Supabase project
+## 1. Configure Supabase Auth
 
-Create a Supabase project, then open **SQL Editor** and run the complete `supabase-schema.sql` file. It registers `pandoranders@gmail.com` as the protected owner and administrator.
+In the Supabase dashboard:
 
-## 2. Configure Google sign-in
+- Disable Google and every other sign-in provider.
+- Keep Email password sign-in enabled.
+- Disable public sign-ups so no other accounts can be created through the app.
+- Under **Authentication  Users**, create and confirm the one account with email `pandoranders@gmail.com`. Set its password there.
 
-In Supabase, enable Google under **Authentication  Sign In / Providers** and enter the Google OAuth client ID and client secret. Use the callback URL shown by Supabase when registering the OAuth client in Google Cloud.
+The app maps the fixed username `unibear` to this Supabase account. It does not show or manage other accounts.
 
-Under **Authentication  URL Configuration**, add the deployed FMTM URL and the local development URL to the allowed redirect URLs. In **Authentication  Sign In / Providers**, disable every provider except Google. The database also checks that the authenticated account used Google sign-in.
+## 2. Apply the database schema
 
-## 3. Add the public project settings
+Open **SQL Editor** and run the full `supabase-schema.sql` file from the repository. It removes the previous app membership table and Google-specific database policies, then restricts the shared todo table to the one FMTM account.
 
-In Supabase, open **Project Settings  API** and copy the Project URL and publishable/anon key into `supabase-config.js`:
+## 3. Project settings
 
-```js
-window.FMTM_SUPABASE_CONFIG = {
-  url: "https://YOUR_PROJECT.supabase.co",
-  anonKey: "YOUR_PUBLISHABLE_OR_ANON_KEY"
-};
-```
-
-The publishable/anon key is designed for browser use. Never put a service-role or secret key in this file.
+`supabase-config.js` contains the project URL and publishable key. The publishable key is intended for browser use. Never put a Supabase secret or service-role key in this file.
 
 ## 4. Deploy
 
-Commit and push the repository to GitHub. If GitHub Pages is enabled, configure it to serve the repository root. Also add the final GitHub Pages URL to the Supabase allowed redirect URLs.
+Commit and push the repository to GitHub. If GitHub Pages is enabled, configure it to serve the repository root. Add the deployed site URL to Supabase **Authentication  URL Configuration**.
 
 ## Access behavior
 
-- The owner email seeded in `supabase-schema.sql` is the only administrator.
-- The administrator can add or remove member email addresses in the app. Members must sign in with the same Google account email that was added.
-- Members can add, complete, and remove tasks. Changes are stored in Supabase and broadcast live to other open app sessions.
-- Removing a member blocks future database access through row-level security. They can still sign in, but the app will show that their account has no access.
-- The existing browser-only tasks are left in that browser's local storage; they are not uploaded automatically.
+- One fixed login is shown: username `unibear`.
+- The matching Supabase Auth account is `pandoranders@gmail.com`.
+- The shared todo list is stored in Supabase and broadcasts updates to other open sessions using the same account.
+- The old browser-only tasks are not uploaded automatically.
 
