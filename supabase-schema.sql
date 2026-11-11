@@ -1,9 +1,6 @@
 -- FMTM single-account setup: password sign-in for the fixed unibear login.
 
--- Remove the previous Google-account membership list and its access helpers.
-drop table if exists public.app_members cascade;
-drop function if exists public.fmtm_is_member();
-drop function if exists public.fmtm_is_admin();
+begin;
 
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
@@ -19,6 +16,12 @@ drop policy if exists "Members can read tasks" on public.tasks;
 drop policy if exists "Members can add tasks" on public.tasks;
 drop policy if exists "Members can update tasks" on public.tasks;
 drop policy if exists "Members can delete tasks" on public.tasks;
+
+-- Remove the old membership table and its policies before dropping the helpers.
+drop table if exists public.app_members;
+drop function if exists public.fmtm_is_member();
+drop function if exists public.fmtm_is_admin();
+
 drop policy if exists "FMTM account can read tasks" on public.tasks;
 drop policy if exists "FMTM account can add tasks" on public.tasks;
 drop policy if exists "FMTM account can update tasks" on public.tasks;
@@ -72,3 +75,4 @@ begin
 end;
 $$;
 
+commit;
