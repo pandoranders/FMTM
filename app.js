@@ -10,7 +10,8 @@
   const byId = id => document.getElementById(id);
   const list = byId("task-list");
   const form = byId("add-form");
-  const panel = byId("add-panel");
+  const manager = byId("task-manager");
+  const managedList = byId("managed-tasks");
   const input = byId("task-input");
   const room = byId("task-room");
   const parent = byId("task-parent");
@@ -75,30 +76,61 @@
     title.className = "task-title";
     title.textContent = task.title;
     label.append(checkbox, makeHeart(), title);
-    const actions = document.createElement("div");
-    actions.className = "task-actions";
-    if (roomSupport) {
-      const edit = document.createElement("button");
-      edit.className = "delete-button";
-      edit.type = "button";
-      edit.textContent = "✎";
-      edit.setAttribute("aria-label", "Rediger " + task.title);
-      edit.addEventListener("click", () => startEdit(task));
-      actions.append(edit);
-    }
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "delete-button";
-    remove.textContent = "×";
-    remove.setAttribute("aria-label", "Slett " + task.title);
-    remove.addEventListener("click", async () => {
-      const { error } = await client.from("tasks").delete().eq("id", task.id);
-      if (error) message("feedback", "Oppgaven ble ikke slettet. Prøv igjen.", true);
-      else await loadTasks();
-    });
-    actions.append(remove);
-    row.append(label, actions);
+    row.append(label);
     return row;
+  }
+
+  function managerAction(label, task, action) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "text-button";
+    button.textContent = label;
+    button.setAttribute("aria-label", label + " " + task.title);
+    button.dataset.taskAction = label + ":" + task.id;
+    button.addEventListener("click", () => action(task, button));
+    return button;
+  }
+
+  function renderManager() {
+    const focusedAction = document.activeElement?.dataset.taskAction;
+    const rows = tasks.map(task => {
+      const row = document.createElement("li");
+      row.className = "managed-task";
+      const description = document.createElement("div");
+      const title = document.createElement("span");
+      title.textContent = task.title;
+      const details = document.createElement("small");
+      details.textContent = [
+        roomNames.get(taskRoom(task)),
+        task.parent_id ? "Underoppgave" : "",
+        task.done ? "Ferdig" : ""
+      ].filter(Boolean).join(" · ");
+      description.append(title, details);
+      const actions = document.createElement("div");
+      actions.className = "managed-actions";
+      actions.append(managerAction("Rediger", task, startEdit), managerAction("Slett", task, removeTask));
+      row.append(description, actions);
+      return row;
+    });
+    managedList.replaceChildren(...rows);
+    byId("managed-empty").hidden = tasks.length !== 0;
+    clearDone.disabled = !tasks.some(task => task.done);
+    if (focusedAction) {
+      const next = [...managedList.querySelectorAll("button")].find(button => button.dataset.taskAction === focusedAction);
+      (next || managedList.querySelector("button") || input).focus({ preventScroll: Boolean(next) });
+    }
+  }
+
+  async function removeTask(task, button) {
+    button.disabled = true;
+    const { error } = await client.from("tasks").delete().eq("id", task.id);
+    button.disabled = false;
+    if (error) {
+      message("manager-feedback", "Oppgaven ble ikke slettet. Prøv igjen.", true);
+      return;
+    }
+    if (editingId === task.id) resetForm();
+    await loadTasks();
   }
 
   function render() {
@@ -142,10 +174,10 @@
     byId("remaining").textContent = openCount === 1 ? "1 oppgave igjen" : openCount + " oppgaver igjen";
     byId("empty-state").hidden = visible.length !== 0;
     byId("empty-state").textContent = tasks.length ? "Ingen oppgaver i denne visningen." : "Legg til en oppgave for å komme i gang.";
-    clearDone.disabled = !tasks.some(task => task.done);
     byId("room-field").hidden = !roomSupport;
     byId("parent-field").hidden = !roomSupport;
     updateParents();
+    if (manager.open) renderManager();
     if (focused) list.querySelector('[data-task-id="' + CSS.escape(focused) + '"]')?.focus({ preventScroll: true });
   }
 
@@ -156,12 +188,13 @@
     if (missingRooms) result = await client.from("tasks").select("id,title,done,created_at").order("created_at").order("id");
     if (version !== requestVersion || !activeUser) return;
     if (result.error) {
-      message("feedback", "Kunne ikke hente oppgavene. Prøv igjen.", true);
+      message(manager.open ? "manager-feedback" : "feedback", "Kunne ikke hente oppgavene. Prøv igjen.", true);
       return;
     }
     roomSupport = !missingRooms;
     tasks = result.data || [];
     message("feedback", missingRooms ? "Oppgavene vises under Uten rom til romoppsettet er lagt inn i Supabase." : "");
+    message("manager-feedback", missingRooms ? "Rom og underoppgaver blir tilgjengelige når romoppsettet er lagt inn i Supabase." : "");
     render();
   }
 
@@ -179,12 +212,12 @@
 
   function startEdit(task) {
     editingId = task.id;
-    panel.open = true;
     input.value = task.title;
     room.value = taskRoom(task);
     room.disabled = tasks.some(candidate => candidate.parent_id === task.id);
     updateParents();
     parent.value = task.parent_id || "";
+    byId("task-form-title").textContent = "Rediger oppgave";
     form.querySelector("[type=submit]").textContent = "Lagre";
     byId("cancel-edit").hidden = false;
     input.focus();
@@ -194,6 +227,7 @@
     editingId = null;
     form.reset();
     room.disabled = false;
+    byId("task-form-title").textContent = "Legg til oppgave";
     form.querySelector("[type=submit]").textContent = "Legg til";
     byId("cancel-edit").hidden = true;
     updateParents();
@@ -201,6 +235,11 @@
 
   room.addEventListener("change", updateParents);
   byId("cancel-edit").addEventListener("click", resetForm);
+  byId("open-task-manager").addEventListener("click", () => {
+    resetForm();
+    renderManager();
+    manager.showModal();
+  });
   form.addEventListener("submit", async event => {
     event.preventDefault();
     const title = input.value.trim();
@@ -213,12 +252,12 @@
       : await client.from("tasks").insert(record);
     submit.disabled = false;
     if (error) {
-      message("feedback", "Oppgaven ble ikke lagret. Prøv igjen.", true);
+      message(manager.open ? "manager-feedback" : "feedback", "Oppgaven ble ikke lagret. Prøv igjen.", true);
       return;
     }
     resetForm();
     await loadTasks();
-    input.focus();
+    if (manager.open) input.focus();
   });
 
   filters.forEach(button => button.addEventListener("click", () => {
@@ -228,9 +267,15 @@
   }));
 
   clearDone.addEventListener("click", async () => {
+    clearDone.disabled = true;
     const { error } = await client.from("tasks").delete().eq("done", true);
-    if (error) message("feedback", "Ferdige oppgaver ble ikke fjernet. Prøv igjen.", true);
-    else await loadTasks();
+    clearDone.disabled = false;
+    if (error) {
+      message("manager-feedback", "Ferdige oppgaver ble ikke fjernet. Prøv igjen.", true);
+      return;
+    }
+    if (tasks.some(task => task.id === editingId && task.done)) resetForm();
+    await loadTasks();
   });
 
   async function showSession(user) {
@@ -239,6 +284,7 @@
     byId("app-content").hidden = !allowed;
     signOut.hidden = !user;
     if (!allowed) {
+      manager.close();
       activeUser = null;
       requestVersion++;
       tasks = [];
