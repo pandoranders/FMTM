@@ -24,6 +24,7 @@ button, summary, input[type="checkbox"] { cursor: pointer; }
 .banner { position: relative; display: grid; place-items: center; isolation: isolate; aspect-ratio: 2.53; overflow: hidden; background: linear-gradient(155deg, #f4b9d6, var(--page) 80%); }
 .banner h1 { margin: 0; text-align: center; color: var(--accent); }
 .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.page-motto { max-width: 40rem; margin: 1rem auto .5rem; padding-inline: 1rem; text-align: center; line-height: 1.5; }
 .room-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1rem, 5vw, 3rem); }
 #app-content { padding: clamp(0.8rem, 3.2vw, 1.65rem) clamp(1rem, 4.5vw, 2.4rem) 0; }
 .room { margin: 0 0 1.15rem; }
