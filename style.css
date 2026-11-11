@@ -53,9 +53,14 @@ button, summary, input[type="checkbox"] { cursor: pointer; }
 .admin-button:hover { background: #f0aecb; }
 .text-button { text-decoration: underline; }
 .text-button:disabled { opacity: .55; cursor: default; }
-.auth-gate { width: min(calc(100% - 2rem), 24rem); margin: 1.25rem auto; }
-.auth-gate h2 { margin: 0 0 .5rem; font: 700 2rem "Caveat", cursive; }
+.auth-gate { width: min(calc(100% - 2rem), 25rem); margin: clamp(1.5rem, 5vw, 3rem) auto 2rem; padding: 24px; border-radius: 12px; background: #fff; }
+.auth-gate h2 { margin: 0 0 1.5rem; text-align: center; font: 700 2.25rem/1.1 "Caveat", cursive; }
 .login-form, .add-form { display: grid; gap: .55rem; }
+.login-form { gap: 1.15rem; }
+.login-form label { display: grid; gap: .45rem; font-weight: 700; }
+.login-form input { min-height: 2.75rem; padding-inline: .75rem; font-size: 1rem; font-weight: 400; }
+.login-form .primary { min-height: 2.75rem; margin-top: .35rem; }
+.auth-gate .status-message { margin: .85rem 0 0; }
 .add-form { margin: .65rem 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .add-form label:first-child, .form-actions { grid-column: 1 / -1; }
 label input, label select { display: block; width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: .45rem; background: #fff5f9; padding: .5rem; }
@@ -71,6 +76,7 @@ body:has(.task-manager[open]) { overflow: hidden; }
 .manager-header > button { justify-self: start; }
 .manager-header > form { justify-self: end; }
 .manager-header > h2 { text-align: center; }
+.manager-add-task { padding-block: .5rem .85rem; }
 .manager-list-header { display: flex; justify-content: flex-end; margin-top: .75rem; }
 .form-actions, .managed-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
 .managed-list { list-style: none; margin: .4rem 0 0; padding: 0; }

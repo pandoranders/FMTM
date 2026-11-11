@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#FED9EA">
   <title>From Mediocre To Magic</title>
-  <link rel="stylesheet" href="./style.css?v=admin-panels">
+  <link rel="stylesheet" href="./style.css?v=login-card">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
   <script defer src="./app.js?v=admin-panels"></script>
@@ -42,8 +42,7 @@
           <form method="dialog"><button class="text-button" type="submit" autofocus>Lukk</button></form>
         </header>
         <p id="manager-feedback" class="status-message" role="status"></p>
-        <details class="manager-panel">
-          <summary>Oppgaver</summary>
+        <section class="manager-add-task" aria-labelledby="task-form-title">
           <h3 id="task-form-title">Legg til oppgave</h3>
           <form class="add-form" id="add-form" aria-labelledby="task-form-title">
             <label for="task-input">Oppgave<input id="task-input" type="text" maxlength="180" autocomplete="off" required></label>
@@ -54,6 +53,9 @@
               <button class="text-button" id="cancel-edit" type="button" hidden>Avbryt</button>
             </div>
           </form>
+        </section>
+        <details class="manager-panel">
+          <summary>Oppgaver</summary>
           <div class="manager-list-header">
             <button class="text-button" id="clear-done" type="button">Fjern ferdige</button>
           </div>
