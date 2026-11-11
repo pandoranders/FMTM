@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: light;
-  --page: #fce0eb;
+  --page: #FED9EA;
   --ink: #561b15;
   --accent: #a33424;
   --line: #eab1c9;
@@ -78,7 +78,16 @@ body:has(.task-manager[open]) { overflow: hidden; }
 .manager-rooms, .manager-footer { border-top: 1px solid #f0d6e2; margin-top: 1.15rem; padding-top: .75rem; }
 .manager-rooms summary { font-weight: 700; }
 .task-manager button { min-height: 2.75rem; }
-@media (max-width: 767px) { .room-grid { grid-template-columns: 1fr; gap: 0; } }
+@media (max-width: 767px) {
+  body { font-size: 1.125rem; }
+  .room-grid { grid-template-columns: 1fr; gap: 0; }
+  .room h2 { font-size: 1.75rem; }
+  .task-child { margin-inline-start: 1.75rem; font-size: .94em; }
+  .task-label, .task-child .task-label { min-height: 3rem; }
+  .task-label { grid-template-columns: 2.75rem minmax(0, 1fr); }
+  .task-checkbox { inline-size: 2.75rem; block-size: 3rem; }
+  .heart { width: 2.25rem; height: 2.25rem; }
+}
 @media (max-width: 480px) {
   .task-manager { padding: 1rem; }
   .task-manager input, .task-manager select { font-size: 16px; }
