@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="./style.css?v=login-card">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
-  <script defer src="./app.js?v=admin-panels"></script>
+  <script defer src="./app.js?v=supabase-login"></script>
 </head>
 <body>
   <main class="shell">
@@ -19,12 +19,23 @@
     <section class="auth-gate" id="auth-gate" aria-labelledby="auth-title">
       <h2 id="auth-title">Logg inn</h2>
       <form class="login-form" id="login-form" method="post">
-        <label for="username">Brukernavn<input id="username" name="username" value="unibear" autocomplete="username" readonly></label>
+        <label for="username">Brukernavn<input id="username" name="username" autocomplete="username" readonly></label>
         <label for="password">Passord<input id="password" name="password" type="password" autocomplete="current-password" required></label>
         <button class="primary" id="sign-in" type="submit" disabled>Logg inn</button>
       </form>
       <p class="status-message" id="auth-message" aria-live="polite"></p>
       <button class="text-button" id="sign-out-denied" type="button" hidden>Logg ut</button>
+    </section>
+
+    <section class="auth-gate" id="recovery-gate" aria-labelledby="recovery-title" hidden>
+      <h2 id="recovery-title">Velg nytt passord</h2>
+      <form class="login-form" id="recovery-form" method="post">
+        <label for="new-password">Nytt passord<input id="new-password" type="password" autocomplete="new-password" required></label>
+        <label for="repeat-password">Gjenta passord<input id="repeat-password" type="password" autocomplete="new-password" required></label>
+        <button class="primary" type="submit">Lagre passord</button>
+        <button class="text-button" id="cancel-recovery" type="button">Avbryt</button>
+      </form>
+      <p class="status-message" id="recovery-message" role="status"></p>
     </section>
 
     <section id="app-content" aria-label="Oppussingslista" hidden>

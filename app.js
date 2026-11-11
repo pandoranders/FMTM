@@ -1,5 +1,5 @@
 (() => {
-  const LOGIN_USERNAME = "unibear";
+  const LEGACY_USERNAME = "unibear";
   const LOGIN_EMAIL = "pandoranders@gmail.com";
   const DEFAULT_ROOMS = [
     [["kjokken", "Kjøkken"], ["loftsstue", "Loftsstue"], ["annet", "Uten rom"]],
@@ -19,6 +19,8 @@
   const parent = byId("task-parent");
   const clearDone = byId("clear-done");
   const signIn = byId("sign-in");
+  const usernameInput = byId("username");
+  const recoveryForm = byId("recovery-form");
   const signOut = byId("sign-out");
   const signOutDenied = byId("sign-out-denied");
   const roomForm = byId("room-form");
@@ -27,6 +29,9 @@
   const filters = [...document.querySelectorAll("[data-filter]")];
 
   let client;
+  let loginUsername;
+  let recoveringPassword = false;
+  let recoveryLink = new URLSearchParams(location.hash.slice(1)).get("type") === "recovery";
   let channel;
   let roomsChannel;
   let tasks = [];
@@ -415,8 +420,10 @@
 
   async function showSession(user) {
     const allowed = user?.email?.toLowerCase() === LOGIN_EMAIL && user.app_metadata?.provider === "email";
+    if (!allowed) recoveringPassword = false;
     byId("auth-gate").hidden = allowed;
-    byId("app-content").hidden = !allowed;
+    byId("recovery-gate").hidden = !recoveringPassword;
+    byId("app-content").hidden = !allowed || recoveringPassword;
     signOutDenied.hidden = !user || allowed;
     if (!allowed) {
       manager.close();
@@ -435,6 +442,7 @@
       if (user) message("auth-message", "Denne kontoen har ikke tilgang til FMTM.", true);
       return;
     }
+    if (recoveringPassword) return;
     if (activeUser === user.id) return;
     activeUser = user.id;
     channel = client.channel("fmtm-shared-tasks")
@@ -445,7 +453,7 @@
 
   byId("login-form").addEventListener("submit", async event => {
     event.preventDefault();
-    if (!client || byId("username").value !== LOGIN_USERNAME) return;
+    if (!loginUsername || signIn.disabled || usernameInput.value !== loginUsername) return;
     signIn.disabled = true;
     message("auth-message", "Logger inn …");
     const password = byId("password");
@@ -455,13 +463,54 @@
     if (error) message("auth-message", "Ugyldig brukernavn eller passord.", true);
   });
 
+  recoveryForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const submit = recoveryForm.querySelector("[type=submit]");
+    if (!recoveringPassword || submit.disabled) return;
+    const password = byId("new-password").value;
+    if (password !== byId("repeat-password").value) {
+      message("recovery-message", "Passordene må være like.", true);
+      return;
+    }
+    submit.disabled = true;
+    byId("cancel-recovery").disabled = true;
+    message("recovery-message", "Lagrer passordet …");
+    const { data, error } = await client.auth.updateUser({ password });
+    submit.disabled = false;
+    byId("cancel-recovery").disabled = false;
+    if (error) {
+      message("recovery-message", error.message || "Passordet kunne ikke lagres.", true);
+      return;
+    }
+    recoveryForm.reset();
+    recoveringPassword = false;
+    await showSession(data.user);
+    message("feedback", "Passordet er oppdatert.");
+  });
+
   async function logOut() {
     const { error } = await client.auth.signOut({ scope: "local" });
-    message(error && manager.open ? "manager-feedback" : "auth-message",
+    const destination = error && recoveringPassword ? "recovery-message" :
+      error && manager.open ? "manager-feedback" : "auth-message";
+    message(destination,
       error ? "Kunne ikke logge ut." : "Du er logget ut.", Boolean(error));
+    if (!error) recoveryForm.reset();
   }
   signOut.addEventListener("click", logOut);
   signOutDenied.addEventListener("click", logOut);
+  byId("cancel-recovery").addEventListener("click", logOut);
+
+  async function loadLoginUsername() {
+    const { data, error } = await client.from("fmtm_login").select("username").single();
+    if (!error) loginUsername = data.username;
+    else if (["PGRST205", "42P01"].includes(error.code)) loginUsername = LEGACY_USERNAME;
+    if (!loginUsername) {
+      message("auth-message", "Kunne ikke hente brukernavnet. Last siden på nytt.", true);
+      return;
+    }
+    usernameInput.value = loginUsername;
+    signIn.disabled = false;
+  }
 
   if (!config.url || !config.anonKey || !window.supabase?.createClient) {
     message("auth-message", "Kunne ikke koble til Supabase.", true);
@@ -469,8 +518,12 @@
     return;
   }
   client = window.supabase.createClient(config.url, config.anonKey);
-  signIn.disabled = false;
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange((event, session) => {
+    if (session?.user && (event === "PASSWORD_RECOVERY" || recoveryLink)) {
+      recoveringPassword = true;
+      recoveryLink = false;
+    }
     setTimeout(() => showSession(session?.user), 0);
   });
+  loadLoginUsername();
 })();
