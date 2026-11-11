@@ -1,205 +1,61 @@
 <!doctype html>
-<html lang="no">
+<html lang="nb">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f6f3">
-  <title>FMTM � Todo</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --page: #f5f6f3;
-      --surface: #ffffff;
-      --ink: #202522;
-      --muted: #7b837d;
-      --line: #e8ebe6;
-      --green: #3d7759;
-      --green-soft: #e9f2ec;
-      --danger: #b34b42;
-      --shadow: 0 20px 60px rgba(35, 48, 39, .08);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--ink);
-      background:
-        radial-gradient(ellipse at 50% -14%, rgba(174, 207, 181, .34), transparent 46%),
-        var(--page);
-    }
-    button, input { font: inherit; }
-    button { color: inherit; }
-    .shell { width: min(100% - 36px, 760px); margin: 0 auto; padding: 52px 0 60px; }
-    .topline { display: flex; align-items: center; justify-content: space-between; margin-bottom: 58px; }
-    .brand { display: flex; align-items: center; gap: 11px; font-size: 13px; font-weight: 750; letter-spacing: .12em; }
-    .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: var(--green); color: white; }
-    .brand-mark svg { width: 17px; height: 17px; }
-    .saved { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 8px; }
-    .saved-dot { width: 7px; height: 7px; border-radius: 50%; background: #71a982; }
-    .intro { margin-bottom: 28px; }
-    .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .12em; font-size: 11px; font-weight: 750; margin: 0 0 12px; }
-    h1 { font-size: clamp(36px, 7vw, 54px); line-height: 1.04; letter-spacing: -.055em; margin: 0; font-weight: 700; }
-    .subhead { margin: 13px 0 0; color: var(--muted); font-size: 15px; }
-    .card { background: var(--surface); border: 1px solid rgba(224, 229, 223, .8); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
-    .add-form { display: flex; gap: 11px; padding: 17px; border-bottom: 1px solid var(--line); }
-    .add-icon { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; border: 1px dashed #bdc9be; border-radius: 12px; color: var(--green); }
-    .add-icon svg { width: 18px; height: 18px; }
-    .add-input { min-width: 0; flex: 1; border: 0; outline: 0; color: var(--ink); background: transparent; padding: 0 3px; font-size: 15px; }
-    .add-input::placeholder { color: #9aa19b; }
-    .add-button { border: 0; border-radius: 12px; padding: 0 18px; background: var(--green); color: #fff; font-size: 13px; font-weight: 650; cursor: pointer; transition: background .18s, transform .18s; }
-    .add-button:hover { background: #315f47; }
-    .add-button:active { transform: scale(.97); }
-    .toolbar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); gap: 12px; }
-    .filters { display: flex; gap: 5px; }
-    .filter { border: 0; background: transparent; color: var(--muted); font-size: 12px; padding: 8px 11px; border-radius: 9px; cursor: pointer; }
-    .filter:hover { color: var(--ink); background: #f7f8f6; }
-    .filter[aria-pressed="true"] { color: var(--green); background: var(--green-soft); font-weight: 650; }
-    .remaining { color: var(--muted); font-size: 12px; white-space: nowrap; }
-    .list { list-style: none; margin: 0; padding: 4px 20px; }
-    .task { display: flex; align-items: center; gap: 13px; min-height: 58px; border-bottom: 1px solid #f0f1ef; animation: appear .2s ease-out; }
-    .task:last-child { border-bottom: 0; }
-    @keyframes appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .check-wrap { flex: 0 0 21px; width: 21px; height: 21px; position: relative; }
-    .check-wrap input { appearance: none; width: 21px; height: 21px; border: 1.5px solid #cbd2ca; border-radius: 7px; margin: 0; cursor: pointer; display: block; transition: all .18s; }
-    .check-wrap input:hover { border-color: var(--green); }
-    .check-wrap input:checked { border-color: var(--green); background: var(--green); }
-    .check-wrap input:checked::after { content: ""; display: block; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); position: absolute; left: 8px; top: 4px; }
-    .check-wrap input:focus-visible, button:focus-visible, .add-input:focus-visible { outline: 3px solid rgba(61,119,89,.26); outline-offset: 3px; }
-    .task-title { flex: 1; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
-    .task.done .task-title { color: #a0a7a1; text-decoration: line-through; text-decoration-color: #b8c0b9; }
-    .delete-button { border: 0; background: transparent; color: #a4aba5; cursor: pointer; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; opacity: 0; transition: opacity .15s, background .15s, color .15s; }
-    .task:hover .delete-button, .delete-button:focus-visible { opacity: 1; }
-    .delete-button:hover { color: var(--danger); background: #fbefed; }
-    .delete-button svg { width: 16px; height: 16px; }
-    .empty { padding: 49px 20px 53px; text-align: center; color: var(--muted); }
-    .empty-icon { width: 47px; height: 47px; margin: 0 auto 15px; border-radius: 15px; background: #f1f5f1; color: var(--green); display: grid; place-items: center; }
-    .empty-icon svg { width: 21px; height: 21px; }
-    .empty h2 { color: var(--ink); font-size: 14px; margin: 0 0 6px; font-weight: 650; }
-    .empty p { font-size: 13px; margin: 0; }
-    .footer { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 14px 20px; border-top: 1px solid var(--line); min-height: 52px; }
-    .storage-note, .clear-button { color: var(--muted); font-size: 11px; }
-    .storage-note { display: flex; align-items: center; gap: 7px; }
-    .storage-note svg { width: 14px; height: 14px; color: #7c9b82; }
-    .clear-button { border: 0; background: transparent; cursor: pointer; padding: 6px 0; }
-    .clear-button:hover { color: var(--danger); }
-    .clear-button:disabled { opacity: .4; cursor: default; }
-    .bottom-note { color: #929a93; text-align: center; font-size: 11px; margin: 22px 0 0; }
-    [hidden] { display: none !important; }
-    .account-controls { display: flex; align-items: center; justify-content: flex-end; gap: 12px; color: var(--muted); font-size: 12px; }
-    .auth-gate { background: var(--surface); border: 1px solid rgba(224, 229, 223, .8); border-radius: 20px; box-shadow: var(--shadow); padding: 32px; text-align: center; }
-    .auth-gate h2 { margin: 0 0 8px; font-size: 20px; }
-    .auth-gate p { margin: 0 auto 18px; max-width: 430px; color: var(--muted); font-size: 14px; line-height: 1.5; }
-    .login-button { border: 0; border-radius: 11px; padding: 12px 17px; background: var(--green); color: white; font-size: 13px; font-weight: 650; cursor: pointer; }
-    .login-button:hover { background: #315f47; }
-    .login-button:disabled { opacity: .5; cursor: default; }
-    .login-form { display: grid; gap: 10px; width: min(100%, 320px); margin: 0 auto; text-align: left; }
-    .login-form label { color: var(--muted); font-size: 12px; }
-    .login-form input { width: 100%; margin-top: 5px; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; outline: 0; }
-    .login-form input:focus { border-color: var(--green); }
-    .text-button { border: 0; padding: 7px 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; }
-    .text-button:hover { color: var(--ink); }
-    .feedback, .status-message { min-height: 18px; margin: 9px 20px 0; color: var(--muted); font-size: 12px; }
-    .error-text { color: var(--danger) !important; }
-    .setup-hint { display: block; margin-top: 13px; color: var(--muted); font-size: 11px; }
-    @media (max-width: 540px) {
-      .shell { width: min(100% - 24px, 760px); padding-top: 26px; }
-      .topline { margin-bottom: 44px; }
-      .toolbar { padding: 12px 11px; }
-      .list { padding-inline: 14px; }
-      .footer { padding-inline: 14px; }
-      .filter { padding: 8px 9px; }
-      .remaining { font-size: 11px; }
-      .add-form { padding: 13px; gap: 9px; }
-      .add-icon { flex-basis: 40px; width: 40px; height: 40px; }
-      .add-button { padding-inline: 14px; }
-      .delete-button { opacity: 1; }
-      .storage-note { font-size: 10px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js"></script>
+  <meta name="theme-color" content="#fce0eb">
+  <title>From Mediocre To Magic</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="./supabase-config.js"></script>
+  <script defer src="./app.js"></script>
 </head>
 <body>
   <main class="shell">
-    <header class="topline">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><path d="m6.5 12.5 3.7 3.7L18 8.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-        <span>FMTM</span>
-      </div>
-      <div class="account-controls">
-        <span id="account-label"></span>
-        <button class="text-button" id="sign-out" type="button" hidden>Logg ut</button>
-      </div>
+    <header class="banner">
+      <h1><img src="./banner.jpg" alt="From Mediocre To Magic" width="2002" height="786" fetchpriority="high"></h1>
     </header>
 
     <section class="auth-gate" id="auth-gate" aria-labelledby="auth-title">
-      <h2 id="auth-title">Logg inn p� FMTM</h2>
-      <p>Logg inn med den faste FMTM-kontoen for � �pne todo-lista.</p>
-      <form class="login-form" id="login-form">
-        <label for="username">Brukernavn<input id="username" name="username" value="unibear" autocomplete="username" readonly required></label>
+      <h2 id="auth-title">Logg inn</h2>
+      <form class="login-form" id="login-form" method="post">
+        <label for="username">Brukernavn<input id="username" name="username" value="unibear" autocomplete="username" readonly></label>
         <label for="password">Passord<input id="password" name="password" type="password" autocomplete="current-password" required></label>
-        <button class="login-button" id="sign-in" type="submit">Logg inn</button>
+        <button class="primary" id="sign-in" type="submit" disabled>Logg inn</button>
       </form>
       <p class="status-message" id="auth-message" aria-live="polite"></p>
-      <span class="setup-hint">Samme innlogging gir tilgang fra alle enhetene dine.</span>
     </section>
 
-    <div id="app-content" hidden>
+    <section id="app-content" aria-label="Oppussingslista" hidden>
+      <div class="room-grid" id="task-list"></div>
+      <p id="empty-state" class="empty" hidden></p>
+      <p id="feedback" class="status-message" role="status"></p>
 
-    <section class="intro" aria-labelledby="page-title">
-      <p class="eyebrow">Den delte lista</p>
-      <h1 id="page-title">�n ting av gangen.</h1>
-      <p class="subhead">F� tankene ut av hodet og inn p� lista.</p>
-    </section>
-
-    <section class="card" aria-label="Todo-liste">
-      <form class="add-form" id="add-form">
-        <span class="add-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </span>
-        <input class="add-input" id="task-input" type="text" maxlength="180" autocomplete="off" placeholder="Skriv inn en oppgave." aria-label="Ny oppgave">
-        <button class="add-button" type="submit">Legg til</button>
-      </form>
-
-      <div class="toolbar">
-        <div class="filters" role="group" aria-label="Vis oppgaver">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">Alle</button>
-          <button class="filter" type="button" data-filter="active" aria-pressed="false">�pne</button>
-          <button class="filter" type="button" data-filter="done" aria-pressed="false">Ferdige</button>
+      <footer class="tools">
+        <details class="add-panel" id="add-panel">
+          <summary>Legg til oppgave</summary>
+          <form class="add-form" id="add-form">
+            <label for="task-input">Oppgave<input id="task-input" type="text" maxlength="180" autocomplete="off" required></label>
+            <label id="room-field" for="task-room" hidden>Rom<select id="task-room"></select></label>
+            <label id="parent-field" for="task-parent" hidden>Underoppgave til<select id="task-parent"></select></label>
+            <button class="primary" type="submit">Legg til</button>
+            <button class="text-button" id="cancel-edit" type="button" hidden>Avbryt</button>
+          </form>
+        </details>
+        <div class="toolbar">
+          <div class="filters" role="group" aria-label="Vis oppgaver">
+            <button type="button" data-filter="all" aria-pressed="true">Alle</button>
+            <button type="button" data-filter="active" aria-pressed="false">Åpne</button>
+            <button type="button" data-filter="done" aria-pressed="false">Ferdige</button>
+          </div>
+          <span id="remaining" aria-live="polite"></span>
+          <button class="text-button" id="clear-done" type="button">Fjern ferdige</button>
         </div>
-        <span class="remaining" id="remaining" aria-live="polite"></span>
-      </div>
-
-      <ul class="list" id="task-list" aria-label="Oppgaver"></ul>
-      <div class="empty" id="empty-state" hidden>
-        <div class="empty-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M7 4.8h10a2 2 0 0 1 2 2v12.4H5V6.8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 4V3h6v1M8.5 10h7M8.5 13.5h7M8.5 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </div>
-        <h2 id="empty-title">Lista er klar for deg</h2>
-        <p id="empty-copy">Legg til en oppgave n�r du er klar.</p>
-      </div>
-
-      <footer class="footer">
-        <span class="storage-note">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="8" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 8V6a3 3 0 1 1 6 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Synkroniseres for alle med tilgang
-        </span>
-        <button class="clear-button" id="clear-done" type="button">Fjern ferdige</button>
       </footer>
-      <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
     </section>
-    <p class="bottom-note">Endringer lagres automatisk og vises for alle som har tilgang.</p>
+    <div class="account-controls">
+      <button class="text-button" id="sign-out" type="button" hidden>Logg ut</button>
     </div>
-
   </main>
-
-  <script src="./app.js"></script>
 </body>
 </html>
-
