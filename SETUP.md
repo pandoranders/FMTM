@@ -10,7 +10,7 @@ Create a Supabase project, then open **SQL Editor**. In `supabase-schema.sql`, r
 
 In Supabase, enable Google under **Authentication  Sign In / Providers** and enter the Google OAuth client ID and client secret. Use the callback URL shown by Supabase when registering the OAuth client in Google Cloud.
 
-Under **Authentication  URL Configuration**, add the deployed FMTM URL and the local development URL to the allowed redirect URLs. Google sign-in is the only sign-in option exposed by this app.
+Under **Authentication  URL Configuration**, add the deployed FMTM URL and the local development URL to the allowed redirect URLs. In **Authentication  Sign In / Providers**, disable every provider except Google. The database also checks that the authenticated account used Google sign-in.
 
 ## 3. Add the public project settings
 

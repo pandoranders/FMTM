@@ -28,6 +28,7 @@ as $$
     select 1
     from public.app_members m
     where m.email = lower((select auth.jwt() ->> 'email'))
+      and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'google'
   );
 $$;
 
@@ -43,6 +44,7 @@ as $$
     from public.app_members m
     where m.email = lower((select auth.jwt() ->> 'email'))
       and m.role = 'admin'
+      and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'google'
   );
 $$;
 
@@ -52,7 +54,11 @@ alter table public.tasks enable row level security;
 drop policy if exists "Members can read their own access" on public.app_members;
 create policy "Members can read their own access"
   on public.app_members for select to authenticated
-  using (email = lower((select auth.jwt() ->> 'email')) or (select public.fmtm_is_admin()));
+  using (
+    (email = lower((select auth.jwt() ->> 'email'))
+      and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'google')
+    or (select public.fmtm_is_admin())
+  );
 
 drop policy if exists "Admins can add members" on public.app_members;
 create policy "Admins can add members"
