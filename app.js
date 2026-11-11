@@ -312,7 +312,7 @@
     layer.setAttribute("aria-hidden", "true");
     document.body.append(layer);
     const colors = ["#ffcf40", "#fff5ad", "#ff77bc", "#ffffff", "#b78aff", "#79dfe5"];
-    const count = reducedMotion ? 10 : 90;
+    const count = reducedMotion ? 10 : 180;
     for (let i = 0; i < count; i++) {
       const sparkle = document.createElement("span");
       sparkle.className = "celebration-sparkle";
@@ -337,16 +337,16 @@
         { opacity: 0, transform: transform(0, 0, .2, 0) },
         { opacity: 1, offset: .12 },
         { opacity: 1, transform: transform(x * .8, y * .8, 1, spin * .6), offset: .55 },
-        { opacity: 0, transform: transform(x, y + 90, .1, spin) }
+        { opacity: 0, transform: transform(x, y + 320, .1, spin) }
       ];
       sparkle.animate(frames, {
-        duration: reducedMotion ? 500 : 900 + Math.random() * 650,
+        duration: reducedMotion ? 500 : 1800 + Math.random() * 1000,
         delay: reducedMotion ? 0 : Math.random() * 160,
         easing: "cubic-bezier(.15,.65,.35,1)",
         fill: "both"
       });
     }
-    window.setTimeout(() => layer.remove(), 1900);
+    window.setTimeout(() => layer.remove(), reducedMotion ? 600 : 3100);
   }
 
   async function saveCheck(task, checkbox) {
