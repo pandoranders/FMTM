@@ -305,7 +305,54 @@
     render();
   }
 
+  function celebrateHeart(origin) {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const layer = document.createElement("div");
+    layer.className = "celebration";
+    layer.setAttribute("aria-hidden", "true");
+    document.body.append(layer);
+    const colors = ["#ffcf40", "#fff5ad", "#ff77bc", "#ffffff", "#b78aff", "#79dfe5"];
+    const count = reducedMotion ? 10 : 90;
+    for (let i = 0; i < count; i++) {
+      const sparkle = document.createElement("span");
+      sparkle.className = "celebration-sparkle";
+      sparkle.textContent = i % 3 === 0 ? "★" : "✦";
+      sparkle.style.left = (origin.x - window.scrollX) + "px";
+      sparkle.style.top = (origin.y - window.scrollY) + "px";
+      sparkle.style.color = colors[i % colors.length];
+      sparkle.style.fontSize = (8 + Math.random() * 18) + "px";
+      layer.append(sparkle);
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 45 + Math.random() * 170;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance - 45;
+      const spin = Math.random() * 540 - 270;
+      const transform = (dx, dy, scale, rotation) =>
+        `translate(-50%, -50%) translate(${dx}px, ${dy}px) rotate(${rotation}deg) scale(${scale})`;
+      const frames = reducedMotion ? [
+        { opacity: 0, transform: transform(x * .16, y * .16, .8, 0) },
+        { opacity: 1, offset: .25 },
+        { opacity: 0, transform: transform(x * .16, y * .16, .8, 0) }
+      ] : [
+        { opacity: 0, transform: transform(0, 0, .2, 0) },
+        { opacity: 1, offset: .12 },
+        { opacity: 1, transform: transform(x * .8, y * .8, 1, spin * .6), offset: .55 },
+        { opacity: 0, transform: transform(x, y + 90, .1, spin) }
+      ];
+      sparkle.animate(frames, {
+        duration: reducedMotion ? 500 : 900 + Math.random() * 650,
+        delay: reducedMotion ? 0 : Math.random() * 160,
+        easing: "cubic-bezier(.15,.65,.35,1)",
+        fill: "both"
+      });
+    }
+    window.setTimeout(() => layer.remove(), 1900);
+  }
+
   async function saveCheck(task, checkbox) {
+    const completed = checkbox.checked && !task.done;
+    const heart = checkbox.nextElementSibling.getBoundingClientRect();
+    const origin = { x: heart.left + heart.width / 2 + window.scrollX, y: heart.top + heart.height / 2 + window.scrollY };
     checkbox.disabled = true;
     const { error } = await client.from("tasks").update({ done: checkbox.checked }).eq("id", task.id);
     checkbox.disabled = false;
@@ -313,6 +360,7 @@
       checkbox.checked = task.done;
       message("feedback", "Endringen ble ikke lagret. Prøv igjen.", true);
     } else {
+      if (completed) celebrateHeart(origin);
       await loadTasks();
     }
   }

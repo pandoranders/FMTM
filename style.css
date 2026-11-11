@@ -104,3 +104,7 @@ body:has(.task-manager[open]) { overflow: hidden; }
   .task-manager input, .task-manager select { font-size: 16px; }
   .add-form { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Keep the celebration above the list without intercepting taps or adding scrollbars. */
+.celebration { position: fixed; inset: 0; z-index: 1000; overflow: hidden; pointer-events: none; }
+.celebration-sparkle { position: absolute; line-height: 1; opacity: 0; text-shadow: 0 0 5px currentColor; will-change: transform, opacity; }
