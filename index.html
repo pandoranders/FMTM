@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fce0eb">
   <title>From Mediocre To Magic</title>
-  <link rel="stylesheet" href="./style.css?v=task-manager">
+  <link rel="stylesheet" href="./style.css?v=admin-rooms">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
-  <script defer src="./app.js?v=task-manager"></script>
+  <script defer src="./app.js?v=admin-rooms"></script>
 </head>
 <body>
   <main class="shell">
@@ -24,6 +24,7 @@
         <button class="primary" id="sign-in" type="submit" disabled>Logg inn</button>
       </form>
       <p class="status-message" id="auth-message" aria-live="polite"></p>
+      <button class="text-button" id="sign-out-denied" type="button" hidden>Logg ut</button>
     </section>
 
     <section id="app-content" aria-label="Oppussingslista" hidden>
@@ -32,19 +33,11 @@
       <p id="feedback" class="status-message" role="status"></p>
 
       <footer class="tools">
-        <div class="toolbar">
-          <div class="filters" role="group" aria-label="Vis oppgaver">
-            <button type="button" data-filter="all" aria-pressed="true">Alle</button>
-            <button type="button" data-filter="active" aria-pressed="false">Åpne</button>
-            <button type="button" data-filter="done" aria-pressed="false">Ferdige</button>
-          </div>
-          <span id="remaining" aria-live="polite"></span>
-        </div>
-        <button class="text-button" id="open-task-manager" type="button">Administrer oppgaver</button>
+        <button class="admin-button" id="open-task-manager" type="button">Admin</button>
       </footer>
       <dialog class="task-manager" id="task-manager" aria-labelledby="task-manager-title">
         <header class="manager-header">
-          <h2 id="task-manager-title">Administrer oppgaver</h2>
+          <h2 id="task-manager-title">Admin</h2>
           <form method="dialog"><button class="text-button" type="submit" autofocus>Lukk</button></form>
         </header>
         <h3 id="task-form-title">Legg til oppgave</h3>
@@ -63,14 +56,34 @@
             <h3 id="managed-tasks-title">Oppgaver</h3>
             <button class="text-button" id="clear-done" type="button">Fjern ferdige</button>
           </div>
+          <div class="toolbar">
+            <div class="filters" role="group" aria-label="Vis oppgaver">
+              <button type="button" data-filter="all" aria-pressed="true">Alle</button>
+              <button type="button" data-filter="active" aria-pressed="false">Åpne</button>
+              <button type="button" data-filter="done" aria-pressed="false">Ferdige</button>
+            </div>
+            <span id="remaining" aria-live="polite"></span>
+          </div>
           <p id="managed-empty" class="empty" hidden>Ingen oppgaver ennå.</p>
           <ul class="managed-list" id="managed-tasks"></ul>
         </section>
+        <details class="manager-rooms">
+          <summary>Administrer rom</summary>
+          <p id="room-feedback" class="status-message" role="status"></p>
+          <form class="add-form" id="room-form" hidden>
+            <label for="room-name">Romnavn<input id="room-name" type="text" maxlength="80" required></label>
+            <div class="form-actions">
+              <button class="primary" type="submit">Legg til rom</button>
+              <button class="text-button" id="cancel-room-edit" type="button" hidden>Avbryt</button>
+            </div>
+          </form>
+          <ul class="managed-list" id="managed-rooms"></ul>
+        </details>
+        <footer class="manager-footer">
+          <button class="text-button" id="sign-out" type="button">Logg ut</button>
+        </footer>
       </dialog>
     </section>
-    <div class="account-controls">
-      <button class="text-button" id="sign-out" type="button" hidden>Logg ut</button>
-    </div>
   </main>
 </body>
 </html>

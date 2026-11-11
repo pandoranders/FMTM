@@ -1,11 +1,13 @@
 (() => {
   const LOGIN_USERNAME = "unibear";
   const LOGIN_EMAIL = "pandoranders@gmail.com";
-  const ROOMS = [
+  const DEFAULT_ROOMS = [
     [["kjokken", "Kjøkken"], ["loftsstue", "Loftsstue"], ["annet", "Uten rom"]],
     [["stue", "Stue"], ["elli", "Rommet til Elli"], ["walk-in", "Walk-in"]]
-  ];
-  const roomNames = new Map(ROOMS.flat());
+  ].flatMap((rooms, column) => rooms.map(([id, name], index) => ({
+    id, name, layout_column: column + 1, sort_order: index * 10
+  })));
+  const OTHER_ROOM = "annet";
   const config = window.FMTM_SUPABASE_CONFIG || {};
   const byId = id => document.getElementById(id);
   const list = byId("task-list");
@@ -18,18 +20,27 @@
   const clearDone = byId("clear-done");
   const signIn = byId("sign-in");
   const signOut = byId("sign-out");
+  const signOutDenied = byId("sign-out-denied");
+  const roomForm = byId("room-form");
+  const roomInput = byId("room-name");
+  const managedRooms = byId("managed-rooms");
   const filters = [...document.querySelectorAll("[data-filter]")];
 
   let client;
   let channel;
+  let roomsChannel;
   let tasks = [];
-  let roomSupport = true;
+  let rooms = DEFAULT_ROOMS;
+  let roomNames = new Map(rooms.map(({ id, name }) => [id, name]));
+  let roomSupport = false;
+  let roomManagement = false;
   let currentFilter = "all";
   let editingId = null;
+  let editingRoomId = null;
   let activeUser = null;
   let requestVersion = 0;
 
-  for (const [key, name] of ROOMS.flat()) room.add(new Option(name, key));
+  updateRoomOptions();
 
   function message(id, text, error = false) {
     const element = byId(id);
@@ -38,7 +49,15 @@
   }
 
   function taskRoom(task) {
-    return roomNames.has(task.room) ? task.room : "annet";
+    return roomNames.has(task.room) ? task.room : OTHER_ROOM;
+  }
+
+  function updateRoomOptions() {
+    const selected = room.value;
+    const ordered = rooms.filter(item => item.id !== OTHER_ROOM);
+    ordered.push(...rooms.filter(item => item.id === OTHER_ROOM));
+    room.replaceChildren(...ordered.map(item => new Option(item.name, item.id)));
+    if (selected) room.value = roomNames.has(selected) ? selected : OTHER_ROOM;
   }
 
   function updateParents() {
@@ -85,15 +104,16 @@
     button.type = "button";
     button.className = "text-button";
     button.textContent = label;
-    button.setAttribute("aria-label", label + " " + task.title);
+    button.setAttribute("aria-label", label + " " + (task.title ?? task.name));
     button.dataset.taskAction = label + ":" + task.id;
     button.addEventListener("click", () => action(task, button));
     return button;
   }
 
   function renderManager() {
-    const focusedAction = document.activeElement?.dataset.taskAction;
-    const rows = tasks.map(task => {
+    const focusedAction = managedList.contains(document.activeElement) ? document.activeElement.dataset.taskAction : null;
+    const visible = tasks.filter(task => currentFilter === "all" || task.done === (currentFilter === "done"));
+    const rows = visible.map(task => {
       const row = document.createElement("li");
       row.className = "managed-task";
       const description = document.createElement("div");
@@ -113,12 +133,64 @@
       return row;
     });
     managedList.replaceChildren(...rows);
-    byId("managed-empty").hidden = tasks.length !== 0;
+    byId("managed-empty").hidden = visible.length !== 0;
+    byId("managed-empty").textContent = tasks.length ? "Ingen oppgaver i denne visningen." : "Ingen oppgaver ennå.";
+    const openCount = tasks.filter(task => !task.done).length;
+    byId("remaining").textContent = openCount === 1 ? "1 oppgave igjen" : openCount + " oppgaver igjen";
     clearDone.disabled = !tasks.some(task => task.done);
     if (focusedAction) {
       const next = [...managedList.querySelectorAll("button")].find(button => button.dataset.taskAction === focusedAction);
       (next || managedList.querySelector("button") || input).focus({ preventScroll: Boolean(next) });
     }
+  }
+
+  function renderRooms() {
+    const focused = managedRooms.contains(document.activeElement) ? document.activeElement.dataset.taskAction : null;
+    roomForm.hidden = !roomManagement;
+    const rows = rooms.filter(item => item.id !== OTHER_ROOM).map(item => {
+      const row = document.createElement("li");
+      row.className = "managed-task";
+      const title = document.createElement("span");
+      title.textContent = item.name;
+      const actions = document.createElement("div");
+      actions.className = "managed-actions";
+      actions.append(managerAction("Gi nytt navn til", item, startRoomEdit), managerAction("Slett", item, removeRoom));
+      row.append(title, actions);
+      return row;
+    });
+    managedRooms.replaceChildren(...(roomManagement ? rows : []));
+    if (focused && roomManagement) {
+      const next = [...managedRooms.querySelectorAll("button")].find(button => button.dataset.taskAction === focused);
+      (next || roomInput).focus({ preventScroll: Boolean(next) });
+    }
+  }
+
+  function resetRoomForm() {
+    editingRoomId = null;
+    roomForm.reset();
+    roomForm.querySelector("[type=submit]").textContent = "Legg til rom";
+    byId("cancel-room-edit").hidden = true;
+  }
+
+  function startRoomEdit(item) {
+    editingRoomId = item.id;
+    roomInput.value = item.name;
+    roomForm.querySelector("[type=submit]").textContent = "Lagre romnavn";
+    byId("cancel-room-edit").hidden = false;
+    roomInput.focus();
+  }
+
+  async function removeRoom(item, button) {
+    if (!window.confirm("Slette «" + item.name + "»? Oppgavene i rommet flyttes til «Uten rom».")) return;
+    button.disabled = true;
+    const { error } = await client.from("rooms").delete().eq("id", item.id);
+    button.disabled = false;
+    if (error) {
+      message("room-feedback", "Rommet ble ikke slettet. Prøv igjen.", true);
+      return;
+    }
+    if (editingRoomId === item.id) resetRoomForm();
+    await loadTasks();
   }
 
   async function removeTask(task, button) {
@@ -135,15 +207,12 @@
 
   function render() {
     const focused = document.activeElement?.dataset.taskId;
-    const matches = task => currentFilter === "all" || task.done === (currentFilter === "done");
-    const visible = tasks.filter(matches);
-    const visibleIds = new Set(visible.map(task => task.id));
     list.replaceChildren();
-    for (const rooms of ROOMS) {
+    for (const columnNumber of [1, 2]) {
       const column = document.createElement("div");
-      for (const [key, name] of rooms) {
-        const inRoom = visible.filter(task => taskRoom(task) === key);
-        if (key === "annet" && inRoom.length === 0) continue;
+      for (const { id, name } of rooms.filter(item => item.layout_column === columnNumber)) {
+        const inRoom = tasks.filter(task => taskRoom(task) === id);
+        if (id === OTHER_ROOM && inRoom.length === 0) continue;
         const section = document.createElement("section");
         section.className = "room";
         const heading = document.createElement("h2");
@@ -152,8 +221,7 @@
         rows.className = "task-list";
         const nested = new Set();
         for (const task of inRoom) {
-          if (task.parent_id && visibleIds.has(task.parent_id) &&
-              inRoom.some(candidate => candidate.id === task.parent_id && !candidate.parent_id)) {
+          if (task.parent_id && inRoom.some(candidate => candidate.id === task.parent_id && !candidate.parent_id)) {
             nested.add(task.id);
           }
         }
@@ -170,20 +238,24 @@
       list.append(column);
     }
 
-    const openCount = tasks.filter(task => !task.done).length;
-    byId("remaining").textContent = openCount === 1 ? "1 oppgave igjen" : openCount + " oppgaver igjen";
-    byId("empty-state").hidden = visible.length !== 0;
-    byId("empty-state").textContent = tasks.length ? "Ingen oppgaver i denne visningen." : "Legg til en oppgave for å komme i gang.";
+    byId("empty-state").hidden = tasks.length !== 0;
+    byId("empty-state").textContent = "Legg til en oppgave under Admin.";
     byId("room-field").hidden = !roomSupport;
     byId("parent-field").hidden = !roomSupport;
     updateParents();
-    if (manager.open) renderManager();
+    if (manager.open) {
+      renderManager();
+      renderRooms();
+    }
     if (focused) list.querySelector('[data-task-id="' + CSS.escape(focused) + '"]')?.focus({ preventScroll: true });
   }
 
   async function loadTasks() {
     const version = ++requestVersion;
-    let result = await client.from("tasks").select("id,title,done,created_at,room,parent_id").order("created_at").order("id");
+    let [result, roomResult] = await Promise.all([
+      client.from("tasks").select("id,title,done,created_at,room,parent_id").order("created_at").order("id"),
+      client.from("rooms").select("id,name,layout_column,sort_order").order("sort_order").order("name")
+    ]);
     const missingRooms = result.error?.code === "42703";
     if (missingRooms) result = await client.from("tasks").select("id,title,done,created_at").order("created_at").order("id");
     if (version !== requestVersion || !activeUser) return;
@@ -192,9 +264,23 @@
       return;
     }
     roomSupport = !missingRooms;
+    roomManagement = !roomResult.error;
+    if (roomManagement) rooms = roomResult.data || [];
+    else if (["PGRST205", "42P01"].includes(roomResult.error.code)) rooms = DEFAULT_ROOMS;
+    roomNames = new Map(rooms.map(({ id, name }) => [id, name]));
+    updateRoomOptions();
+    if (roomManagement && !roomsChannel) {
+      roomsChannel = client.channel("fmtm-room-updates")
+        .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, loadTasks)
+        .subscribe();
+    }
     tasks = result.data || [];
-    message("feedback", missingRooms ? "Oppgavene vises under Uten rom til romoppsettet er lagt inn i Supabase." : "");
+    message("feedback", "");
     message("manager-feedback", missingRooms ? "Rom og underoppgaver blir tilgjengelige når romoppsettet er lagt inn i Supabase." : "");
+    message("room-feedback", roomManagement ? "" :
+      ["PGRST205", "42P01"].includes(roomResult.error.code)
+        ? "Kjør den oppdaterte supabase-rooms.sql i Supabase for å administrere rom."
+        : "Kunne ikke hente rommene. Prøv igjen.", !roomManagement);
     render();
   }
 
@@ -237,8 +323,41 @@
   byId("cancel-edit").addEventListener("click", resetForm);
   byId("open-task-manager").addEventListener("click", () => {
     resetForm();
+    resetRoomForm();
     renderManager();
+    renderRooms();
     manager.showModal();
+  });
+  byId("cancel-room-edit").addEventListener("click", resetRoomForm);
+  roomForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const name = roomInput.value.trim();
+    const submit = roomForm.querySelector("[type=submit]");
+    if (!name || !roomManagement || submit.disabled) return;
+    const editId = editingRoomId;
+    if (rooms.some(item => item.id !== editId && item.name.toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb"))) {
+      message("room-feedback", "Det finnes allerede et rom med det navnet.", true);
+      return;
+    }
+    submit.disabled = true;
+    const leftCount = rooms.filter(item => item.layout_column === 1 && item.id !== OTHER_ROOM).length;
+    const rightCount = rooms.filter(item => item.layout_column === 2).length;
+    const layoutColumn = leftCount <= rightCount ? 1 : 2;
+    const sortOrder = Math.max(0, ...rooms
+      .filter(item => item.layout_column === layoutColumn && item.id !== OTHER_ROOM)
+      .map(item => item.sort_order)) + 10;
+    const { error } = editId
+      ? await client.from("rooms").update({ name }).eq("id", editId)
+      : await client.from("rooms").insert({
+        id: crypto.randomUUID(), name, layout_column: layoutColumn, sort_order: sortOrder
+      });
+    submit.disabled = false;
+    if (error) {
+      message("room-feedback", "Rommet ble ikke lagret. Prøv igjen.", true);
+      return;
+    }
+    if (editingRoomId === editId && roomInput.value.trim() === name) resetRoomForm();
+    await loadTasks();
   });
   form.addEventListener("submit", async event => {
     event.preventDefault();
@@ -263,7 +382,7 @@
   filters.forEach(button => button.addEventListener("click", () => {
     currentFilter = button.dataset.filter;
     filters.forEach(filter => filter.setAttribute("aria-pressed", String(filter === button)));
-    render();
+    renderManager();
   }));
 
   clearDone.addEventListener("click", async () => {
@@ -282,18 +401,21 @@
     const allowed = user?.email?.toLowerCase() === LOGIN_EMAIL && user.app_metadata?.provider === "email";
     byId("auth-gate").hidden = allowed;
     byId("app-content").hidden = !allowed;
-    signOut.hidden = !user;
+    signOutDenied.hidden = !user || allowed;
     if (!allowed) {
       manager.close();
       activeUser = null;
       requestVersion++;
       tasks = [];
+      rooms = DEFAULT_ROOMS;
+      roomNames = new Map(rooms.map(({ id, name }) => [id, name]));
+      roomManagement = false;
+      roomSupport = false;
       list.replaceChildren();
-      if (channel) {
-        const oldChannel = channel;
-        channel = null;
-        await client.removeChannel(oldChannel);
-      }
+      const oldChannels = [channel, roomsChannel].filter(Boolean);
+      channel = null;
+      roomsChannel = null;
+      await Promise.all(oldChannels.map(oldChannel => client.removeChannel(oldChannel)));
       if (user) message("auth-message", "Denne kontoen har ikke tilgang til FMTM.", true);
       return;
     }
@@ -317,10 +439,13 @@
     if (error) message("auth-message", "Ugyldig brukernavn eller passord.", true);
   });
 
-  signOut.addEventListener("click", async () => {
+  async function logOut() {
     const { error } = await client.auth.signOut({ scope: "local" });
-    message("auth-message", error ? "Kunne ikke logge ut." : "Du er logget ut.", Boolean(error));
-  });
+    message(error && manager.open ? "manager-feedback" : "auth-message",
+      error ? "Kunne ikke logge ut." : "Du er logget ut.", Boolean(error));
+  }
+  signOut.addEventListener("click", logOut);
+  signOutDenied.addEventListener("click", logOut);
 
   if (!config.url || !config.anonKey || !window.supabase?.createClient) {
     message("auth-message", "Kunne ikke koble til Supabase.", true);
