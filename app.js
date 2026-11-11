@@ -99,13 +99,29 @@
     return row;
   }
 
-  function managerAction(label, task, action) {
+  function managerAction(icon, label, task, action) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "text-button";
-    button.textContent = label;
+    button.className = "icon-button";
+    button.title = label;
     button.setAttribute("aria-label", label + " " + (task.title ?? task.name));
     button.dataset.taskAction = label + ":" + task.id;
+    const paths = {
+      edit: "M12 20h9M16 4l4 4M4 20l4.5-1 12-12a2.8 2.8 0 0 0-4-4l-12 12L4 20Z",
+      delete: "M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"
+    };
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS(svg.namespaceURI, "path");
+    path.setAttribute("d", paths[icon]);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "1.7");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    svg.append(path);
+    button.append(svg);
     button.addEventListener("click", () => action(task, button));
     return button;
   }
@@ -128,7 +144,7 @@
       description.append(title, details);
       const actions = document.createElement("div");
       actions.className = "managed-actions";
-      actions.append(managerAction("Rediger", task, startEdit), managerAction("Slett", task, removeTask));
+      actions.append(managerAction("edit", "Rediger", task, startEdit), managerAction("delete", "Slett", task, removeTask));
       row.append(description, actions);
       return row;
     });
@@ -154,7 +170,7 @@
       title.textContent = item.name;
       const actions = document.createElement("div");
       actions.className = "managed-actions";
-      actions.append(managerAction("Gi nytt navn til", item, startRoomEdit), managerAction("Slett", item, removeRoom));
+      actions.append(managerAction("edit", "Gi nytt navn til", item, startRoomEdit), managerAction("delete", "Slett", item, removeRoom));
       row.append(title, actions);
       return row;
     });

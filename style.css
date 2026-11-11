@@ -43,7 +43,7 @@ button, summary, input[type="checkbox"] { cursor: pointer; }
 .empty, .status-message { margin: .4rem 0; font-size: .87rem; }
 .status-message:empty { display: none; }
 .error-text { color: #97241c; }
-.tools { margin-top: 1.1rem; }
+.tools { margin-top: 1.1rem; text-align: center; }
 .toolbar, .filters { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
 .toolbar { margin-top: .55rem; font-size: .85rem; }
 .toolbar #remaining { margin-inline-end: auto; }
@@ -67,22 +67,27 @@ body:has(.task-manager[open]) { overflow: hidden; }
 .task-manager h2, .task-manager h3 { margin: 0; }
 .task-manager h2 { font-size: 1.25rem; }
 .task-manager h3 { font-size: 1rem; }
-.manager-header, .manager-list-header { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
-.manager-header { margin-bottom: 1rem; }
-.manager-list-header { margin-top: 1.25rem; }
+.manager-header { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .5rem; margin-bottom: .5rem; }
+.manager-header > button { justify-self: start; }
+.manager-header > form { justify-self: end; }
+.manager-header > h2 { text-align: center; }
+.manager-list-header { display: flex; justify-content: flex-end; margin-top: .75rem; }
 .form-actions, .managed-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
 .managed-list { list-style: none; margin: .4rem 0 0; padding: 0; }
 .managed-task { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .45rem; padding: .6rem 0; border-top: 1px solid #f0d6e2; }
 .managed-task span, .managed-task small { display: block; overflow-wrap: anywhere; }
 .managed-task small { margin-top: .15rem; color: #775458; }
-.manager-rooms, .manager-footer { border-top: 1px solid #f0d6e2; margin-top: 1.15rem; padding-top: .75rem; }
-.manager-rooms summary { font-weight: 700; }
+.manager-panel { border-top: 1px solid #f0d6e2; }
+.manager-panel summary { padding-block: .75rem; font-weight: 700; }
+.manager-panel[open] { padding-bottom: .75rem; }
+.icon-button { display: grid; place-items: center; width: 2.75rem; padding: 0; border: 0; border-radius: .4rem; background: transparent; }
+.icon-button:hover { background: #f5bfd6; }
+.icon-button:disabled { opacity: .55; cursor: default; }
+.icon-button svg { width: 1.2rem; height: 1.2rem; }
 .task-manager button { min-height: 2.75rem; }
 @media (max-width: 767px) {
-  body { font-size: 1.125rem; }
   .room-grid { grid-template-columns: 1fr; gap: 0; }
-  .room h2 { font-size: 1.75rem; }
-  .task-child { margin-inline-start: 1.75rem; font-size: .94em; }
+  .task-child { margin-inline-start: 1.75rem; }
   .task-label, .task-child .task-label { min-height: 3rem; }
   .task-label { grid-template-columns: 2.75rem minmax(0, 1fr); }
   .task-checkbox { inline-size: 2.75rem; block-size: 3rem; }

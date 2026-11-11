@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#FED9EA">
   <title>From Mediocre To Magic</title>
-  <link rel="stylesheet" href="./style.css?v=mobile-hearts">
+  <link rel="stylesheet" href="./style.css?v=admin-panels">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
-  <script defer src="./app.js?v=admin-rooms"></script>
+  <script defer src="./app.js?v=admin-panels"></script>
 </head>
 <body>
   <main class="shell">
@@ -37,23 +37,24 @@
       </footer>
       <dialog class="task-manager" id="task-manager" aria-labelledby="task-manager-title">
         <header class="manager-header">
+          <button class="text-button" id="sign-out" type="button">Logg ut</button>
           <h2 id="task-manager-title">Admin</h2>
           <form method="dialog"><button class="text-button" type="submit" autofocus>Lukk</button></form>
         </header>
-        <h3 id="task-form-title">Legg til oppgave</h3>
-        <form class="add-form" id="add-form" aria-labelledby="task-form-title">
-          <label for="task-input">Oppgave<input id="task-input" type="text" maxlength="180" autocomplete="off" required></label>
-          <label id="room-field" for="task-room" hidden>Rom<select id="task-room"></select></label>
-          <label id="parent-field" for="task-parent" hidden>Underoppgave til<select id="task-parent"></select></label>
-          <div class="form-actions">
-            <button class="primary" type="submit">Legg til</button>
-            <button class="text-button" id="cancel-edit" type="button" hidden>Avbryt</button>
-          </div>
-        </form>
         <p id="manager-feedback" class="status-message" role="status"></p>
-        <section aria-labelledby="managed-tasks-title">
+        <details class="manager-panel">
+          <summary>Oppgaver</summary>
+          <h3 id="task-form-title">Legg til oppgave</h3>
+          <form class="add-form" id="add-form" aria-labelledby="task-form-title">
+            <label for="task-input">Oppgave<input id="task-input" type="text" maxlength="180" autocomplete="off" required></label>
+            <label id="room-field" for="task-room" hidden>Rom<select id="task-room"></select></label>
+            <label id="parent-field" for="task-parent" hidden>Underoppgave til<select id="task-parent"></select></label>
+            <div class="form-actions">
+              <button class="primary" type="submit">Legg til</button>
+              <button class="text-button" id="cancel-edit" type="button" hidden>Avbryt</button>
+            </div>
+          </form>
           <div class="manager-list-header">
-            <h3 id="managed-tasks-title">Oppgaver</h3>
             <button class="text-button" id="clear-done" type="button">Fjern ferdige</button>
           </div>
           <div class="toolbar">
@@ -66,9 +67,9 @@
           </div>
           <p id="managed-empty" class="empty" hidden>Ingen oppgaver ennå.</p>
           <ul class="managed-list" id="managed-tasks"></ul>
-        </section>
-        <details class="manager-rooms">
-          <summary>Administrer rom</summary>
+        </details>
+        <details class="manager-panel">
+          <summary>Kategori/rom</summary>
           <p id="room-feedback" class="status-message" role="status"></p>
           <form class="add-form" id="room-form" hidden>
             <label for="room-name">Romnavn<input id="room-name" type="text" maxlength="80" required></label>
@@ -79,9 +80,6 @@
           </form>
           <ul class="managed-list" id="managed-rooms"></ul>
         </details>
-        <footer class="manager-footer">
-          <button class="text-button" id="sign-out" type="button">Logg ut</button>
-        </footer>
       </dialog>
     </section>
   </main>
