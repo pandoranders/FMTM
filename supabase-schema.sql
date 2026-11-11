@@ -1,5 +1,5 @@
 -- FMTM shared todo list: Google sign-in, one administrator, and invited members.
--- Replace the email below with the Google account that should own the app before running.
+-- The FMTM owner and administrator account.
 
 create table if not exists public.app_members (
   email text primary key check (email = lower(email)),
@@ -101,7 +101,7 @@ grant execute on function public.fmtm_is_admin() to authenticated;
 -- Only the owner row is an administrator. Admins can add and remove members,
 -- but the policies above prevent them from changing or deleting the owner row.
 insert into public.app_members (email, role, is_owner)
-values ('REPLACE_WITH_YOUR_GOOGLE_EMAIL', 'admin', true)
+values ('pandoranders@gmail.com', 'admin', true)
 on conflict (email) do update set role = 'admin', is_owner = true;
 
 -- Enable realtime updates for the shared task list (safe to run more than once).

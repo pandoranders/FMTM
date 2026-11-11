@@ -4,7 +4,7 @@ FMTM is a static web app. Google sign-in and shared task storage are provided by
 
 ## 1. Create the Supabase project
 
-Create a Supabase project, then open **SQL Editor**. In `supabase-schema.sql`, replace `REPLACE_WITH_YOUR_GOOGLE_EMAIL` with your Google account email in lowercase. Run the complete SQL file.
+Create a Supabase project, then open **SQL Editor** and run the complete `supabase-schema.sql` file. It registers `pandoranders@gmail.com` as the protected owner and administrator.
 
 ## 2. Configure Google sign-in
 
