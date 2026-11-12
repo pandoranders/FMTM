@@ -67,7 +67,7 @@ button, summary, input[type="checkbox"] { cursor: pointer; }
 label input, label select { display: block; width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: .45rem; background: #fff5f9; padding: .5rem; }
 .primary { border: 0; border-radius: .45rem; padding: .55rem .8rem; background: var(--accent); color: white; font-weight: 700; }
 .primary:disabled { opacity: .6; cursor: default; }
-body:has(.task-manager[open]) { overflow: hidden; }
+body:has(.task-manager[open], .motivation-overlay[open]) { overflow: hidden; }
 .task-manager { width: min(36rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 1.25rem; border: 0; border-radius: 12px; background: #fff; color: var(--ink); box-shadow: 0 16px 56px #3c16254d; overscroll-behavior: contain; }
 .task-manager::backdrop { background: #30122380; }
 .task-manager h2, .task-manager h3 { margin: 0; }
@@ -124,8 +124,10 @@ body { padding-bottom: 24px; }
 .fab:hover { transform: translateY(-3px); background: #fff; }
 
 .fab:active { transform: scale(.92); }
-.motivation-overlay { position: fixed; inset: 0; z-index: 999; display: grid; place-items: center; padding: 24px 24px var(--fab-clearance); pointer-events: none; background: #fedfec88; }
-.motivation-card { position: relative; width: min(100%, 600px); max-height: calc(100dvh - var(--fab-clearance) - 48px); overflow: auto; padding: 36px 24px; border: 3px solid #fff; border-radius: 24px; background: #fff3fa; box-shadow: 0 16px 80px #8b286240; text-align: center; }
+.motivation-overlay { position: fixed; inset: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; margin: 0; border: 0; padding: 24px 24px var(--fab-clearance); background: transparent; color: var(--ink); overscroll-behavior: contain; }
+.motivation-overlay[open] { display: grid; place-items: center; }
+.motivation-overlay::backdrop { background: #fedfec88; }
+.motivation-card { cursor: pointer; position: relative; width: min(100%, 600px); max-height: calc(100dvh - var(--fab-clearance) - 48px); overflow: auto; padding: 36px 24px; border: 3px solid #fff; border-radius: 24px; background: #fff3fa; box-shadow: 0 16px 80px #8b286240; text-align: center; }
 #motivation-message { margin: 0; }
 #motivation-message strong { display: block; margin-bottom: 16px; font: 700 clamp(2.5rem, 10vw, 4.75rem)/1.05 "Caveat", cursive; color: #8b2862; overflow-wrap: anywhere; }
 #motivation-message span { display: block; font-size: clamp(1.25rem, 4.5vw, 2rem); font-weight: 700; line-height: 1.35; }

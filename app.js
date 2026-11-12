@@ -311,7 +311,7 @@
     const layer = document.createElement("div");
     layer.className = "celebration";
     layer.setAttribute("aria-hidden", "true");
-    document.body.append(layer);
+    (motivational ? byId("motivation-overlay") : document.body).append(layer);
     const colors = ["#ffcf40", "#fff5ad", "#ff77bc", "#ffffff", "#b78aff", "#79dfe5"];
     const count = reducedMotion ? 10 : motivational ? 240 : 180;
     for (let i = 0; i < count; i++) {
@@ -431,9 +431,8 @@
   let motivationTimer;
   function hideMotivation() {
     clearTimeout(motivationTimer);
-    const restoreFocus = motivationOverlay.contains(document.activeElement);
-    motivationOverlay.hidden = true;
-    if (restoreFocus) byId("motivation-button").focus();
+    if (motivationOverlay.open) motivationOverlay.close();
+    motivationOverlay.querySelectorAll(".celebration").forEach(layer => layer.remove());
   }
   byId("motivation-button").addEventListener("click", () => {
     clearTimeout(motivationTimer);
@@ -448,7 +447,7 @@
     const body = document.createElement("span");
     body.textContent = text.slice(split).trim();
     byId("motivation-message").replaceChildren(heading, body);
-    motivationOverlay.hidden = false;
+    motivationOverlay.showModal();
     const card = motivationOverlay.firstElementChild;
     card.getAnimations().forEach(animation => animation.cancel());
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -463,8 +462,16 @@
     celebrateHeart({ x: window.scrollX + window.innerWidth / 2, y: window.scrollY + window.innerHeight * .48 }, true);
     motivationTimer = window.setTimeout(hideMotivation, 6500);
   });
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") hideMotivation();
+  motivationOverlay.firstElementChild.addEventListener("click", hideMotivation);
+  motivationOverlay.firstElementChild.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      hideMotivation();
+    }
+  });
+  motivationOverlay.addEventListener("cancel", event => {
+    event.preventDefault();
+    hideMotivation();
   });
 
   room.addEventListener("change", updateParents);
