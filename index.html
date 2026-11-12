@@ -2,14 +2,14 @@
 <html lang="nb">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#F2A7D0">
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=rounded-card">
+  <link rel="stylesheet" href="./style.css?v=fab-safe-space">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
-  <script defer src="./app.js?v=smooth-sparkles"></script>
+  <script defer src="./app.js?v=motivation-fabs"></script>
 </head>
 <body>
   <main class="shell">
@@ -45,7 +45,9 @@
       <p id="feedback" class="status-message" role="status"></p>
 
       <footer class="tools">
-        <button class="admin-button" id="open-task-manager" type="button">Admin</button>
+        <button class="fab fab-admin" id="open-task-manager" type="button" aria-label="Admin" title="Admin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16 4l4 4M4 20l4.5-1 12-12a2.8 2.8 0 0 0-4-4l-12 12L4 20Z"/></svg></button>
+        <button class="fab fab-motivation" id="motivation-button" type="button" aria-label="Gi meg motivasjon!" title="Gi meg motivasjon!"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16 8 12c2-6 6-9 13-9 0 7-3 11-9 13ZM8 12H3l3-5h5M12 16v5l5-3v-5M6 15c-2 0-3 3-3 6 3 0 6-1 6-3"/><circle cx="16" cy="8" r="2"/></svg></button>
+        <div class="motivation-overlay" id="motivation-overlay" hidden><div class="motivation-card"><button class="motivation-close text-button" id="close-motivation" type="button" aria-label="Lukk motivasjon">Lukk</button><p id="motivation-message" role="status" aria-live="polite" aria-atomic="true"></p></div></div>
       </footer>
       <dialog class="task-manager" id="task-manager" aria-labelledby="task-manager-title">
         <header class="manager-header">

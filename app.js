@@ -305,18 +305,19 @@
     render();
   }
 
-  function celebrateHeart(origin) {
+  function celebrateHeart(origin, motivational = false) {
+    document.querySelectorAll(".celebration").forEach(layer => layer.remove());
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const layer = document.createElement("div");
     layer.className = "celebration";
     layer.setAttribute("aria-hidden", "true");
     document.body.append(layer);
     const colors = ["#ffcf40", "#fff5ad", "#ff77bc", "#ffffff", "#b78aff", "#79dfe5"];
-    const count = reducedMotion ? 10 : 180;
+    const count = reducedMotion ? 10 : motivational ? 240 : 180;
     for (let i = 0; i < count; i++) {
       const sparkle = document.createElement("span");
       sparkle.className = "celebration-sparkle";
-      sparkle.textContent = i % 3 === 0 ? "★" : "✦";
+      sparkle.textContent = motivational ? ["\u2726", "\u2605", "\u2665"][i % 3] : i % 3 === 0 ? "\u2726" : "\u2605";
       sparkle.style.left = (origin.x - window.scrollX) + "px";
       sparkle.style.top = (origin.y - window.scrollY) + "px";
       sparkle.style.color = colors[i % colors.length];
@@ -403,9 +404,71 @@
     updateParents();
   }
 
+  const motivationPhrases = [
+    "BAM! Du er \u00e9n skrue n\u00e6rmere dr\u00f8mmehjemmet!",
+    "BOOM! Oppussingsguden smiler til deg!",
+    "POW! Den veggen visste ikke hva som traff den!",
+    "HELL YEAH! Du bygger ikke bare et hjem. Du bygger en legende!",
+    "KABOOM! Enda et steg mot interi\u00f8r-Nirvana!",
+    "DING DING! Du vinner over oppussingskaoset!",
+    "OH SNAP! Selv h\u00e5ndverkere ville v\u00e6rt imponert. Kanskje.",
+    "BAM! Litt svette, mye stil og null anger!",
+    "BOOYAH! Du er en drill med menneskekropp!",
+    "LEVEL UP! Oppussingsferdighetene dine \u00f8ker!",
+    "POFF! Rot blir til magi. Etter hvert.",
+    "YES BABY! Dette huset blir sexy!",
+    "KA-CHING! Du \u00f8ker boligverdien! Forh\u00e5pentligvis.",
+    "BOOMSHAKALAKA! Den lista sitter som et skudd!",
+    "YOU GOT THIS! Selv IKEA ville ansatt deg!",
+    "BAM BAM! Du er Michelangelo med sparkel!",
+    "HOLY MOLY! Se p\u00e5 deg, din oppussingsmaskin!",
+    "EPIC WIN! \u00c9n oppgave mindre. Hundre igjen!",
+    "FULL SEND! Rett frem, gjennom st\u00f8v og kaos!",
+    "TADAAA! Snart bor du i ditt eget mesterverk!"
+];
+  const motivationOverlay = byId("motivation-overlay");
+  let lastMotivation = -1;
+  let motivationTimer;
+  function hideMotivation() {
+    clearTimeout(motivationTimer);
+    const restoreFocus = motivationOverlay.contains(document.activeElement);
+    motivationOverlay.hidden = true;
+    if (restoreFocus) byId("motivation-button").focus();
+  }
+  byId("motivation-button").addEventListener("click", () => {
+    clearTimeout(motivationTimer);
+    // Choose uniformly among every phrase except the one just shown.
+    let index = Math.floor(Math.random() * (motivationPhrases.length - (lastMotivation < 0 ? 0 : 1)));
+    if (lastMotivation >= 0 && index >= lastMotivation) index++;
+    lastMotivation = index;
+    const text = motivationPhrases[index];
+    const split = text.indexOf("!") + 1;
+    const heading = document.createElement("strong");
+    heading.textContent = text.slice(0, split);
+    const body = document.createElement("span");
+    body.textContent = text.slice(split).trim();
+    byId("motivation-message").replaceChildren(heading, body);
+    motivationOverlay.hidden = false;
+    const card = motivationOverlay.firstElementChild;
+    card.getAnimations().forEach(animation => animation.cancel());
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    card.animate(reduced ? [{ opacity: 0 }, { opacity: 1 }] : [
+      { opacity: 0, transform: "scale(.35) rotate(-10deg)" },
+      { opacity: 1, transform: "scale(1.08) rotate(2deg)", offset: .65 },
+      { opacity: 1, transform: "scale(1) rotate(0deg)" }
+    ], { duration: reduced ? 150 : 550, easing: "cubic-bezier(.2,.8,.2,1)" });
+    celebrateHeart({ x: window.scrollX + window.innerWidth / 2, y: window.scrollY + window.innerHeight * .48 }, true);
+    motivationTimer = window.setTimeout(hideMotivation, 6500);
+  });
+  byId("close-motivation").addEventListener("click", hideMotivation);
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") hideMotivation();
+  });
+
   room.addEventListener("change", updateParents);
   byId("cancel-edit").addEventListener("click", resetForm);
   byId("open-task-manager").addEventListener("click", () => {
+    hideMotivation();
     resetForm();
     resetRoomForm();
     renderManager();
