@@ -132,3 +132,5 @@ body { padding-bottom: 24px; }
 #motivation-message strong { display: block; margin-bottom: 16px; font: 700 clamp(2.5rem, 10vw, 4.75rem)/1.05 "Caveat", cursive; color: #8b2862; overflow-wrap: anywhere; }
 #motivation-message span { display: block; font-size: clamp(1.25rem, 4.5vw, 2rem); font-weight: 700; line-height: 1.35; }
 @media (prefers-reduced-motion: reduce) { .fab { transition: none; } }
+
+.motivation-card:focus, .motivation-card:focus-visible { outline: none; }
