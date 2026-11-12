@@ -114,7 +114,7 @@ body:has(.task-manager[open], .motivation-overlay[open]) { overflow: hidden; }
 :root { --fab-size: 66px; --fab-offset: 20px; --fab-clearance: calc(var(--fab-size) + var(--fab-offset) + 24px + env(safe-area-inset-bottom, 0px)); }
 html { scroll-padding-bottom: var(--fab-clearance); }
 body { padding-bottom: 24px; }
-.shell { padding-bottom: var(--fab-clearance); }
+.shell { padding-bottom: calc(var(--fab-clearance) - 40px); }
 .tools { margin: 0; }
 .fab { position: fixed; bottom: calc(var(--fab-offset) + env(safe-area-inset-bottom, 0px)); z-index: 1002; display: grid; place-items: center; width: var(--fab-size); height: var(--fab-size); padding: 0; border: 1px solid #ae518359; border-radius: 50%; background: #fff; color: var(--ink); box-shadow: 0 4px 16px #561b1530; transition: transform .2s, background .2s; }
 .fab-admin { left: max(calc(28px + env(safe-area-inset-left, 0px)), calc(50% - 425px + 24px)); }
