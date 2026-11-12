@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#F2A7D0">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FMTM">
+  <script defer src="./pwa.js?v=1"></script>
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./style.css?v=mobile-focus-fix">
@@ -55,6 +60,7 @@
           <h2 id="task-manager-title">Admin</h2>
           <form method="dialog"><button class="icon-button" type="submit" aria-label="Lukk Admin" title="Lukk" autofocus><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form>
         </header>
+        <section class="pwa-install" aria-label="Installer app"><button class="primary" id="install-app" type="button" hidden>Installer app</button><p id="install-help" class="status-message" hidden></p></section>
         <p id="manager-feedback" class="status-message" role="status"></p>
         <section class="manager-add-task" aria-labelledby="task-form-title">
           <h3 id="task-form-title">Legg til oppgave</h3>
