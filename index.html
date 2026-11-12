@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F2A7D0">
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=unicorn-fabs">
+  <link rel="stylesheet" href="./style.css?v=admin-icons-caveat">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
   <script defer src="./app.js?v=unicorn-bounce"></script>
@@ -51,9 +51,9 @@
       </footer>
       <dialog class="task-manager" id="task-manager" aria-labelledby="task-manager-title">
         <header class="manager-header">
-          <button class="text-button" id="sign-out" type="button">Logg ut</button>
+          <button class="icon-button" id="sign-out" type="button" aria-label="Logg ut" title="Logg ut"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H4v16h5M10 12h11m-4-4 4 4-4 4"/></svg></button>
           <h2 id="task-manager-title">Admin</h2>
-          <form method="dialog"><button class="text-button" type="submit" autofocus>Lukk</button></form>
+          <form method="dialog"><button class="icon-button" type="submit" aria-label="Lukk Admin" title="Lukk" autofocus><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form>
         </header>
         <p id="manager-feedback" class="status-message" role="status"></p>
         <section class="manager-add-task" aria-labelledby="task-form-title">
