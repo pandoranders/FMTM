@@ -133,4 +133,6 @@ body { padding-bottom: 24px; }
 #motivation-message span { display: block; font-size: clamp(1.25rem, 4.5vw, 2rem); font-weight: 700; line-height: 1.35; }
 @media (prefers-reduced-motion: reduce) { .fab { transition: none; } }
 
-.motivation-card:focus, .motivation-card:focus-visible { outline: none; }
+.motivation-overlay:focus, .motivation-overlay:focus-visible,
+.motivation-card:focus, .motivation-card:focus-visible { outline: none !important; outline-offset: 0; }
+.motivation-card { -webkit-tap-highlight-color: transparent; }
