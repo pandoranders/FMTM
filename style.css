@@ -111,21 +111,21 @@ body:has(.task-manager[open]) { overflow: hidden; }
 .celebration-sparkle { position: absolute; line-height: 1; opacity: 0; text-shadow: 0 0 5px currentColor; will-change: transform, opacity; }
 
 /* Fixed actions stay clear of phone safe areas and the last task. */
-:root { --fab-size: 44px; --fab-offset: 20px; --fab-clearance: calc(var(--fab-size) + var(--fab-offset) + 24px + env(safe-area-inset-bottom, 0px)); }
+:root { --fab-size: 66px; --fab-offset: 20px; --fab-clearance: calc(var(--fab-size) + var(--fab-offset) + 24px + env(safe-area-inset-bottom, 0px)); }
 html { scroll-padding-bottom: var(--fab-clearance); }
 body { padding-bottom: 24px; }
 .shell { padding-bottom: var(--fab-clearance); }
 .tools { margin: 0; }
-.fab { position: fixed; bottom: calc(var(--fab-offset) + env(safe-area-inset-bottom, 0px)); z-index: 1002; display: grid; place-items: center; width: var(--fab-size); height: var(--fab-size); padding: 0; border: 1px solid #ae518359; border-radius: 50%; background: #f5bfd6; color: var(--ink); box-shadow: 0 4px 16px #561b1530; transition: transform .2s, background .2s; }
-.fab-admin { left: calc(20px + env(safe-area-inset-left, 0px)); }
-.fab-motivation { right: calc(20px + env(safe-area-inset-right, 0px)); background: #8b2862; color: #fff; }
-.fab svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.fab:hover { transform: translateY(-3px); background: #f0aecb; }
-.fab-motivation:hover { background: #6f1e4e; }
+.fab { position: fixed; bottom: calc(var(--fab-offset) + env(safe-area-inset-bottom, 0px)); z-index: 1002; display: grid; place-items: center; width: var(--fab-size); height: var(--fab-size); padding: 0; border: 1px solid #ae518359; border-radius: 50%; background: #fff; color: var(--ink); box-shadow: 0 4px 16px #561b1530; transition: transform .2s, background .2s; }
+.fab-admin { left: max(calc(28px + env(safe-area-inset-left, 0px)), calc(50% - 425px + 24px)); }
+.fab-motivation { right: max(calc(28px + env(safe-area-inset-right, 0px)), calc(50% - 425px + 24px)); }
+.fab-unicorn { font-size: 34px; line-height: 1; }
+.fab svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fab:hover { transform: translateY(-3px); background: #fff; }
+
 .fab:active { transform: scale(.92); }
-.motivation-overlay { position: fixed; inset: 0; z-index: 999; display: grid; place-items: center; padding: 24px 24px 88px; pointer-events: none; background: #fedfec88; }
-.motivation-card { position: relative; width: min(100%, 600px); max-height: calc(100dvh - 120px); overflow: auto; padding: 48px 24px 32px; border: 3px solid #fff; border-radius: 24px; background: #fff3fa; box-shadow: 0 16px 80px #8b286240; text-align: center; }
-.motivation-close { position: absolute; right: 8px; top: 4px; min-height: 44px; pointer-events: auto; }
+.motivation-overlay { position: fixed; inset: 0; z-index: 999; display: grid; place-items: center; padding: 24px 24px var(--fab-clearance); pointer-events: none; background: #fedfec88; }
+.motivation-card { position: relative; width: min(100%, 600px); max-height: calc(100dvh - var(--fab-clearance) - 48px); overflow: auto; padding: 36px 24px; border: 3px solid #fff; border-radius: 24px; background: #fff3fa; box-shadow: 0 16px 80px #8b286240; text-align: center; }
 #motivation-message { margin: 0; }
 #motivation-message strong { display: block; margin-bottom: 16px; font: 700 clamp(2rem, 8vw, 4rem)/1.05 "DM Sans", sans-serif; color: #8b2862; overflow-wrap: anywhere; }
 #motivation-message span { display: block; font-size: clamp(1.25rem, 4.5vw, 2rem); font-weight: 700; line-height: 1.35; }

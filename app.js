@@ -453,14 +453,16 @@
     card.getAnimations().forEach(animation => animation.cancel());
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     card.animate(reduced ? [{ opacity: 0 }, { opacity: 1 }] : [
-      { opacity: 0, transform: "scale(.35) rotate(-10deg)" },
-      { opacity: 1, transform: "scale(1.08) rotate(2deg)", offset: .65 },
-      { opacity: 1, transform: "scale(1) rotate(0deg)" }
-    ], { duration: reduced ? 150 : 550, easing: "cubic-bezier(.2,.8,.2,1)" });
+      { opacity: 0, transform: "translateY(100px) scale(.3) rotate(-9deg)" },
+      { opacity: 1, transform: "translateY(-22px) scale(1.08) rotate(3deg)", offset: .42 },
+      { opacity: 1, transform: "translateY(10px) scale(.96) rotate(-2deg)", offset: .62 },
+      { opacity: 1, transform: "translateY(-7px) scale(1.025) rotate(1deg)", offset: .78 },
+      { opacity: 1, transform: "translateY(3px) scale(.99) rotate(-.4deg)", offset: .9 },
+      { opacity: 1, transform: "translateY(0) scale(1) rotate(0deg)" }
+    ], { duration: reduced ? 150 : 950, easing: "cubic-bezier(.2,.8,.2,1)" });
     celebrateHeart({ x: window.scrollX + window.innerWidth / 2, y: window.scrollY + window.innerHeight * .48 }, true);
     motivationTimer = window.setTimeout(hideMotivation, 6500);
   });
-  byId("close-motivation").addEventListener("click", hideMotivation);
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") hideMotivation();
   });
