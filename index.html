@@ -11,7 +11,7 @@
   <script defer src="./pwa.js?v=1"></script>
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=compact-bottom">
+  <link rel="stylesheet" href="./style.css?v=install-box">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
   <script defer src="./app.js?v=modal-motivation"></script>
@@ -60,7 +60,6 @@
           <h2 id="task-manager-title">Admin</h2>
           <form method="dialog"><button class="icon-button" type="submit" aria-label="Lukk Admin" title="Lukk" autofocus><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form>
         </header>
-        <section class="pwa-install" aria-label="Installer app"><button class="primary" id="install-app" type="button" hidden>Installer app</button><p id="install-help" class="status-message" hidden></p></section>
         <p id="manager-feedback" class="status-message" role="status"></p>
         <section class="manager-add-task" aria-labelledby="task-form-title">
           <h3 id="task-form-title">Legg til oppgave</h3>
@@ -102,6 +101,10 @@
           </form>
           <ul class="managed-list" id="managed-rooms"></ul>
         </details>
+        <section class="pwa-install" aria-label="Installer app">
+          <button class="primary" id="install-app" type="button" hidden>Installer app</button>
+          <p id="install-help" class="status-message" hidden></p>
+        </section>
       </dialog>
     </section>
   </main>

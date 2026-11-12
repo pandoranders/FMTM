@@ -136,3 +136,16 @@ body { padding-bottom: 24px; }
 .motivation-overlay:focus, .motivation-overlay:focus-visible,
 .motivation-card:focus, .motivation-card:focus-visible { outline: none !important; outline-offset: 0; }
 .motivation-card { -webkit-tap-highlight-color: transparent; }
+
+.pwa-install {
+  display: grid;
+  justify-items: start;
+  gap: .5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #f0d6e2;
+  border-radius: 12px;
+  background: #fff5f9;
+}
+.pwa-install .status-message { margin: 0; }
+.pwa-install:has(#install-app[hidden]):has(#install-help[hidden]) { display: none; }
