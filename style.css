@@ -354,9 +354,9 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 }
 .bear-messages h2 {
   margin: 0 0 .75rem;
-  font: 700 clamp(2.5rem, 10vw, 4.75rem)/1.05 "Caveat", cursive;
+  font: 700 clamp(54px, 10vw, 76px)/1.05 "Caveat", cursive;
 }
-.bear-messages p { margin: 0; white-space: pre-wrap; }
+.bear-messages p { margin: 0; font-size: 22px; line-height: 1.5; white-space: pre-wrap; }
 .bear-content:has(.bear-navigation:not([hidden])) article { padding-bottom: 4.5rem; }
 .bear-navigation {
   position: absolute;
@@ -411,3 +411,7 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 #bear-actions .bear-heart-button { min-width: 0; padding-inline: 12px; gap: 6px; letter-spacing: 0; }
 
 .bear-reaction-burst .celebration-sparkle { text-shadow: none; }
+
+/* Keep rapid reaction taps from triggering double-tap zoom. */
+html { touch-action: pan-x pan-y; }
+button, a, label { touch-action: manipulation; }
