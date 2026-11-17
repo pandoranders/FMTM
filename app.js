@@ -45,6 +45,195 @@
   let activeUser = null;
   let requestVersion = 0;
 
+  const screenLinks = [...document.querySelectorAll("[data-screen-link]")];
+  const todoForm = byId("todo-form");
+  const todoInput = byId("todo-input");
+  const todoAdd = byId("todo-add");
+  const todoClear = byId("todo-clear");
+  const todoClearDialog = byId("todo-clear-dialog");
+  let todoItems = [];
+  let todoReady = false;
+  let todoBusy = false;
+  let todoRequest = 0;
+
+  function showScreen() {
+    if (recoveringPassword || !activeUser) return;
+    const requested = location.hash.slice(1);
+    const screen = screenLinks.some(link => link.dataset.screenLink === requested) ? requested : "house";
+    if (screen !== "todo" && todoClearDialog.open) todoClearDialog.close("cancel");
+    document.documentElement.dataset.screen = screen;
+    byId("house-banner").hidden = screen !== "house";
+    byId("app-content").hidden = screen !== "house";
+    byId("todo-screen").hidden = screen !== "todo";
+    byId("bear-screen").hidden = screen !== "bear";
+    byId("bottom-menu").hidden = false;
+    for (const link of screenLinks) {
+      if (link.dataset.screenLink === screen) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+    document.querySelector('meta[name="theme-color"]').content =
+      getComputedStyle(document.documentElement).getPropertyValue("--backdrop").trim();
+    window.scrollTo(0, 0);
+    if (screen === "todo") loadTodo();
+    if (screen === "bear") loadBearMessages();
+  }
+
+  window.addEventListener("hashchange", showScreen);
+
+  const bearMessages = byId("bear-messages");
+  let bearRequest = 0;
+
+  async function loadBearMessages() {
+    const request = ++bearRequest;
+    const user = activeUser;
+    bearMessages.hidden = true;
+    byId("bear-navigation").hidden = true;
+    bearMessages.replaceChildren();
+    message("bear-status", "Henter beskjeder …");
+    const { data, error } = await client.from("bear_messages")
+      .select("title,body").order("created_at", { ascending: false }).order("id");
+    if (request !== bearRequest || user !== activeUser) return;
+    if (error) {
+      message("bear-status", "Kunne ikke hente beskjedene.", true);
+      return;
+    }
+    for (const item of data) {
+      const card = document.createElement("article");
+      const title = document.createElement("h2");
+      const body = document.createElement("p");
+      title.textContent = item.title;
+      body.textContent = item.body;
+      card.append(title, body);
+      bearMessages.append(card);
+    }
+    message("bear-status", data.length ? "" : "Ingen beskjeder fra bjørnen ennå.");
+    bearMessages.hidden = data.length === 0;
+    bearMessages.scrollLeft = 0;
+    byId("bear-navigation").hidden = data.length < 2;
+  }
+
+  function moveBearMessage(direction) {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    bearMessages.scrollBy({ left: direction * bearMessages.clientWidth, behavior: reducedMotion ? "instant" : "smooth" });
+  }
+
+  byId("bear-previous").addEventListener("click", () => moveBearMessage(-1));
+  byId("bear-next").addEventListener("click", () => moveBearMessage(1));
+
+  // Touch and trackpad use native scrolling and snap. Mouse drag changes one card.
+  let bearDrag;
+  bearMessages.addEventListener("pointerdown", event => {
+    if (event.pointerType !== "mouse" || event.button !== 0 || bearMessages.children.length < 2) return;
+    event.preventDefault();
+    bearMessages.setPointerCapture(event.pointerId);
+    bearDrag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  });
+  bearMessages.addEventListener("pointerup", event => {
+    if (bearDrag?.id !== event.pointerId) return;
+    const x = event.clientX - bearDrag.x;
+    const y = event.clientY - bearDrag.y;
+    if (Math.abs(x) >= 36 && Math.abs(x) > Math.abs(y)) moveBearMessage(x < 0 ? 1 : -1);
+  });
+  bearMessages.addEventListener("lostpointercapture", () => { bearDrag = undefined; });
+
+  function renderTodo() {
+    byId("todo-empty").hidden = !todoReady || todoItems.length > 0;
+    todoAdd.disabled = !todoReady || todoBusy;
+    todoClear.disabled = !todoReady || todoBusy || !todoItems.some(item => item.done);
+    todoForm.querySelector("[type=submit]").disabled = !todoReady || todoBusy;
+    byId("todo-list").replaceChildren(...todoItems.map(item => {
+      const row = document.createElement("li");
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = item.done;
+      checkbox.disabled = !todoReady || todoBusy;
+      const title = document.createElement("span");
+      title.textContent = item.title;
+      label.append(checkbox, title);
+      row.append(label);
+      checkbox.addEventListener("change", async () => {
+        const done = checkbox.checked;
+        checkbox.checked = item.done;
+        await changeTodo(() => client.from("todo_items").update({ done }).eq("id", item.id));
+        byId("todo-list").querySelectorAll("input")[todoItems.findIndex(task => task.id === item.id)]?.focus();
+      });
+      return row;
+    }));
+  }
+
+  async function loadTodo() {
+    if (todoBusy) return;
+    const request = ++todoRequest;
+    const user = activeUser;
+    const { data, error } = await client.from("todo_items")
+      .select("id,title,done").order("created_at").order("id");
+    if (request !== todoRequest || user !== activeUser) return;
+    todoReady = !error;
+    if (error) message("todo-feedback", "Kunne ikke hente lista. Åpne Todo på nytt for å prøve igjen.", true);
+    else {
+      todoItems = data;
+      message("todo-feedback", "");
+    }
+    renderTodo();
+  }
+
+  async function changeTodo(write) {
+    if (todoBusy || !todoReady) return false;
+    const user = activeUser;
+    ++todoRequest;
+    todoBusy = true;
+    renderTodo();
+    const { error } = await write();
+    if (user !== activeUser) return false;
+    todoBusy = false;
+    if (error) {
+      message("todo-feedback", "Kunne ikke lagre endringen. Prøv igjen.", true);
+      renderTodo();
+      return false;
+    }
+    await loadTodo();
+    return user === activeUser;
+  }
+
+  function toggleTodoForm(open) {
+    todoForm.hidden = !open;
+    todoAdd.setAttribute("aria-expanded", String(open));
+    if (open) todoInput.focus();
+  }
+
+  todoAdd.addEventListener("click", () => toggleTodoForm(true));
+  byId("todo-cancel").addEventListener("click", () => {
+    todoForm.reset();
+    toggleTodoForm(false);
+    todoAdd.focus();
+  });
+  todoForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const title = todoInput.value.trim();
+    if (!title) {
+      todoInput.focus();
+      return;
+    }
+    if (await changeTodo(() => client.from("todo_items").insert({ title }))) {
+      todoForm.reset();
+      toggleTodoForm(false);
+      todoAdd.focus();
+    }
+  });
+  todoClear.addEventListener("click", () => {
+    todoClearDialog.returnValue = "";
+    todoClearDialog.showModal();
+  });
+  todoClearDialog.addEventListener("close", async () => {
+    if (todoClearDialog.returnValue !== "delete" || !activeUser || document.documentElement.dataset.screen !== "todo") return;
+    const checked = todoItems.filter(item => item.done).map(item => item.id);
+    if (!checked.length) return;
+    if (await changeTodo(() => client.from("todo_items").delete().in("id", checked).eq("done", true))) {
+      if (document.documentElement.dataset.screen === "todo") todoAdd.focus();
+    }
+  });
+
   updateRoomOptions();
 
   function message(id, text, error = false) {
@@ -434,7 +623,7 @@
     if (motivationOverlay.open) motivationOverlay.close();
     motivationOverlay.querySelectorAll(".celebration").forEach(layer => layer.remove());
   }
-  byId("motivation-button").addEventListener("click", () => {
+  function showMotivation() {
     clearTimeout(motivationTimer);
     // Choose uniformly among every phrase except the one just shown.
     let index = Math.floor(Math.random() * (motivationPhrases.length - (lastMotivation < 0 ? 0 : 1)));
@@ -461,7 +650,9 @@
     ], { duration: reduced ? 150 : 950, easing: "cubic-bezier(.2,.8,.2,1)" });
     celebrateHeart({ x: window.scrollX + window.innerWidth / 2, y: window.scrollY + window.innerHeight * .48 }, true);
     motivationTimer = window.setTimeout(hideMotivation, 6500);
-  });
+  }
+  byId("motivation-button").addEventListener("click", showMotivation);
+  byId("todo-motivation").addEventListener("click", showMotivation);
   motivationOverlay.firstElementChild.addEventListener("click", hideMotivation);
   motivationOverlay.firstElementChild.addEventListener("keydown", event => {
     if (event.key === "Enter" || event.key === " ") {
@@ -558,11 +749,29 @@
     if (!allowed) recoveringPassword = false;
     byId("auth-gate").hidden = allowed;
     byId("recovery-gate").hidden = !recoveringPassword;
-    byId("app-content").hidden = !allowed || recoveringPassword;
+    if (!allowed || recoveringPassword) {
+      delete document.documentElement.dataset.screen;
+      document.querySelector('meta[name="theme-color"]').content = "#F2A7D0";
+      byId("house-banner").hidden = false;
+      byId("app-content").hidden = true;
+      byId("todo-screen").hidden = true;
+      byId("bear-screen").hidden = true;
+      byId("bottom-menu").hidden = true;
+    }
     signOutDenied.hidden = !user || allowed;
     if (!allowed) {
       manager.close();
+      hideMotivation();
       activeUser = null;
+      ++todoRequest;
+      todoItems = [];
+      if (todoClearDialog.open) todoClearDialog.close("cancel");
+      todoReady = false;
+      todoBusy = false;
+      todoForm.reset();
+      toggleTodoForm(false);
+      message("todo-feedback", "");
+      renderTodo();
       requestVersion++;
       tasks = [];
       rooms = DEFAULT_ROOMS;
@@ -578,8 +787,12 @@
       return;
     }
     if (recoveringPassword) return;
-    if (activeUser === user.id) return;
+    if (activeUser === user.id) {
+      if (byId("bottom-menu").hidden) showScreen();
+      return;
+    }
     activeUser = user.id;
+    showScreen();
     channel = client.channel("fmtm-shared-tasks")
       .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, loadTasks)
       .subscribe(status => { if (status === "SUBSCRIBED") loadTasks(); });
