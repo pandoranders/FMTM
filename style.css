@@ -240,8 +240,8 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 .screen-banner { background: var(--page); }
 .todo-content { width: 100%; padding-bottom: 24px; }
 .todo-heading { color: var(--accent); }
-#todo-add { min-height: 44px; margin-top: .25rem; }
-#todo-add[aria-expanded="true"] { display: none; }
+#todo-add { min-height: 44px; margin-top: 0; }
+#todo-add[aria-expanded="true"] { visibility: hidden; }
 .todo-list { list-style: none; margin: 0; padding: 0; }
 .todo-list {
   --heart: #ce94e7;
@@ -269,8 +269,6 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 }
 .todo-content:has(.todo-empty:not([hidden])) .todo-heading,
 .todo-content:has(.todo-form:not([hidden])) .todo-empty { display: none; }
-.todo-list:not(:empty) ~ .todo-compose #todo-add { margin-top: .5rem; }
-.todo-compose:has(.todo-empty:not([hidden])) #todo-add { margin-inline: auto; }
 .todo-compose:has(.todo-empty:not([hidden])) {
   flex: 1;
   display: flex;
