@@ -162,8 +162,8 @@ html[data-screen] body { padding-bottom: var(--fab-clearance); }
 }
 .menu-icon {
   --icon-fill: color-mix(in srgb, currentColor 28%, transparent);
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.5;
@@ -249,16 +249,8 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 }
 .todo-list .task-checkbox:checked + .heart .heart-shape { fill: #8e3ab3; }
 .todo-list .heart-check { stroke: white; }
-.todo-clear-dialog {
-  width: min(24rem, calc(100% - 2rem));
-  background: #fbecff;
-  color: var(--ink);
-}
-.todo-clear-dialog::backdrop { background: #2d103c99; }
-.todo-clear-dialog .form-actions { justify-content: flex-end; }
-.todo-clear-dialog .primary { background: var(--accent); }
 .todo-list span { overflow-wrap: anywhere; }
-.task-checkbox:checked + .heart + span { opacity: .75; }
+.task-checkbox:checked + .heart + span { opacity: .75; text-decoration: line-through; }
 .todo-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .todo-form input { flex: 1 1 140px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
 #todo-screen { display: flex; flex-direction: column; }
@@ -267,8 +259,7 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
   display: flex;
   flex-direction: column;
 }
-.todo-content:has(.todo-empty:not([hidden])) .todo-heading,
-.todo-content:has(.todo-form:not([hidden])) .todo-empty { display: none; }
+.todo-content:has(.todo-empty:not([hidden])) .todo-heading { display: none; }
 .todo-compose:has(.todo-empty:not([hidden])) {
   flex: 1;
   display: flex;
@@ -352,7 +343,7 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 }
 .bear-messages h2 {
   margin: 0 0 .75rem;
-  font: 700 clamp(54px, 10vw, 76px)/1.05 "Caveat", cursive;
+  font: 700 48px/1.05 "Caveat", cursive;
 }
 .bear-messages p { margin: 0; font-size: 22px; line-height: 1.5; white-space: pre-wrap; }
 .bear-content:has(.bear-navigation:not([hidden])) article { padding-bottom: 4.5rem; }
@@ -413,3 +404,44 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 /* Keep rapid reaction taps from triggering double-tap zoom. */
 html { touch-action: pan-x pan-y; }
 button, a, label { touch-action: manipulation; }
+
+.todo-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border-bottom: 1px solid #c38ce6;
+  padding-block: 6px;
+}
+.todo-remove { min-height: 44px; }
+#todo-form {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  height: var(--action-height);
+  margin: 0;
+  padding: 0 6px 0 16px;
+  border-radius: 999px;
+  background: white;
+  pointer-events: auto;
+}
+#todo-form input {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 16px;
+}
+#todo-form input::placeholder { color: #b9a7c1; opacity: 1; }
+#todo-form #todo-add {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  box-shadow: none;
+  color: var(--ink);
+}
+
+#todo-form #todo-add:disabled { color: #b9a7c1; opacity: 1; }

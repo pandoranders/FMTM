@@ -49,8 +49,6 @@
   const todoForm = byId("todo-form");
   const todoInput = byId("todo-input");
   const todoAdd = byId("todo-add");
-  const todoClear = byId("todo-clear");
-  const todoClearDialog = byId("todo-clear-dialog");
   let todoItems = [];
   let todoReady = false;
   let todoBusy = false;
@@ -60,7 +58,6 @@
     if (recoveringPassword || !activeUser) return;
     const requested = location.hash.slice(1);
     const screen = screenLinks.some(link => link.dataset.screenLink === requested) ? requested : "house";
-    if (screen !== "todo" && todoClearDialog.open) todoClearDialog.close("cancel");
     document.documentElement.dataset.screen = screen;
     byId("house-banner").hidden = screen !== "house";
     byId("app-content").hidden = screen !== "house";
@@ -239,9 +236,7 @@
 
   function renderTodo() {
     byId("todo-empty").hidden = !todoReady || todoItems.length > 0;
-    todoAdd.disabled = !todoReady || todoBusy;
-    todoClear.disabled = !todoReady || todoBusy || !todoItems.some(item => item.done);
-    todoForm.querySelector("[type=submit]").disabled = !todoReady || todoBusy;
+    updateTodoSubmit();
     byId("todo-list").replaceChildren(...todoItems.map(item => {
       const row = document.createElement("li");
       const label = document.createElement("label");
@@ -255,7 +250,18 @@
       title.className = "task-title";
       title.textContent = item.title;
       label.append(checkbox, makeHeart(), title);
-      row.append(label);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "icon-button todo-remove";
+      remove.setAttribute("aria-label", "Slett " + item.title);
+      remove.disabled = !todoReady || todoBusy;
+      remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>';
+      remove.addEventListener("click", async () => {
+        if (await changeTodo(() => client.from("todo_items").delete().eq("id", item.id))) {
+          if (activeUser && document.documentElement.dataset.screen === "todo") todoInput.focus();
+        }
+      });
+      row.append(label, remove);
       checkbox.addEventListener("change", async () => {
         const done = checkbox.checked;
         checkbox.checked = item.done;
@@ -300,18 +306,12 @@
     return user === activeUser;
   }
 
-  function toggleTodoForm(open) {
-    todoForm.hidden = !open;
-    todoAdd.setAttribute("aria-expanded", String(open));
-    if (open) todoInput.focus();
+  function updateTodoSubmit() {
+    todoAdd.disabled = !todoReady || todoBusy || !todoInput.value.trim();
   }
 
-  todoAdd.addEventListener("click", () => toggleTodoForm(true));
-  byId("todo-cancel").addEventListener("click", () => {
-    todoForm.reset();
-    toggleTodoForm(false);
-    todoAdd.focus();
-  });
+  todoInput.addEventListener("input", updateTodoSubmit);
+
   todoForm.addEventListener("submit", async event => {
     event.preventDefault();
     const title = todoInput.value.trim();
@@ -321,23 +321,10 @@
     }
     if (await changeTodo(() => client.from("todo_items").insert({ title }))) {
       todoForm.reset();
-      toggleTodoForm(false);
-      todoAdd.focus();
+      updateTodoSubmit();
+      if (activeUser && document.documentElement.dataset.screen === "todo") todoInput.focus();
     }
   });
-  todoClear.addEventListener("click", () => {
-    todoClearDialog.returnValue = "";
-    todoClearDialog.showModal();
-  });
-  todoClearDialog.addEventListener("close", async () => {
-    if (todoClearDialog.returnValue !== "delete" || !activeUser || document.documentElement.dataset.screen !== "todo") return;
-    const checked = todoItems.filter(item => item.done).map(item => item.id);
-    if (!checked.length) return;
-    if (await changeTodo(() => client.from("todo_items").delete().in("id", checked).eq("done", true))) {
-      if (document.documentElement.dataset.screen === "todo") todoAdd.focus();
-    }
-  });
-
   updateRoomOptions();
 
   function message(id, text, error = false) {
@@ -756,7 +743,6 @@
     motivationTimer = window.setTimeout(hideMotivation, 6500);
   }
   byId("motivation-button").addEventListener("click", showMotivation);
-  byId("todo-motivation").addEventListener("click", showMotivation);
   motivationOverlay.firstElementChild.addEventListener("click", hideMotivation);
   motivationOverlay.firstElementChild.addEventListener("keydown", event => {
     if (event.key === "Enter" || event.key === " ") {
@@ -869,11 +855,9 @@
       activeUser = null;
       ++todoRequest;
       todoItems = [];
-      if (todoClearDialog.open) todoClearDialog.close("cancel");
       todoReady = false;
       todoBusy = false;
       todoForm.reset();
-      toggleTodoForm(false);
       message("todo-feedback", "");
       renderTodo();
       requestVersion++;

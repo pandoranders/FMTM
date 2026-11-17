@@ -8,13 +8,13 @@
   <link rel="apple-touch-icon" href="./icons/icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FMTM">
-  <script defer src="./pwa.js?v=1"></script>
+  <script defer src="./pwa.js?v=fresh-assets"></script>
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=quest-add-actions">
+  <link rel="stylesheet" href="./style.css?v=quest-empty-plus">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
-  <script defer src="./app.js?v=reaction-fade-delay"></script>
+  <script defer src="./app.js?v=quest-empty-plus"></script>
 </head>
 <body>
   <main class="shell">
@@ -108,28 +108,22 @@
         </section>
       </dialog>
     </section>
-    <section id="todo-screen" aria-label="My todos" hidden>
+    <section id="todo-screen" aria-label="My Little Quests" hidden>
       <header class="banner screen-banner">
         <img src="./todo-banner.jpg" alt="" width="1983" height="793">
       </header>
       <div class="todo-content">
-        <h2 class="todo-heading" id="todo-heading" lang="en">My todos</h2>
+        <h2 class="todo-heading" id="todo-heading" lang="en">My Little Quests</h2>
         <p id="todo-feedback" class="status-message" role="status"></p>
         <ul id="todo-list" class="todo-list"></ul>
         <div class="todo-compose">
           <p id="todo-empty" class="todo-empty" role="status" hidden><strong>BRA JOBBA</strong><span>Ingen oppgaver igjen. Du kan slappe av, eller legg til flere oppgaver.</span></p>
-          <form class="todo-form" id="todo-form" hidden>
-            <input id="todo-input" aria-label="Ny oppgave" placeholder="Ny oppgave" maxlength="180" autocomplete="off" required>
-            <button class="primary icon-button" type="submit" aria-label="Lagre oppgave" title="Lagre oppgave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h13l4 4v14H3V3h1Zm3 0v6h10V3M7 21v-7h10v7"/></svg></button>
-            <button class="icon-button" id="todo-cancel" type="button" aria-label="Avbryt" title="Avbryt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
-          </form>
         </div>
       </div>
-      <div class="screen-actions">
-        <button id="todo-clear" type="button" aria-label="Fjern avkryssede oppgaver" title="Fjern avkryssede oppgaver" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button>
-        <button id="todo-add" type="button" aria-label="Legg til oppgave" title="Legg til oppgave" aria-controls="todo-form" aria-expanded="false" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-        <button id="todo-motivation" type="button" aria-haspopup="dialog" aria-label="Gi meg motivasjon!" title="Gi meg motivasjon!"><span aria-hidden="true">&#x1F984;</span></button>
-      </div>
+      <form class="todo-form screen-actions" id="todo-form">
+        <input id="todo-input" aria-label="Legg til ny Quest" placeholder="Legg til ny Quest..." maxlength="180" autocomplete="off" required>
+        <button id="todo-add" type="submit" aria-label="Lagre oppgave" title="Lagre oppgave" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+      </form>
     </section>
     <section id="bear-screen" aria-label="A message from the Bear" hidden>
       <header class="banner screen-banner">
@@ -144,14 +138,6 @@
       </div>
     </section>
   </main>
-  <dialog id="todo-clear-dialog" class="task-manager todo-clear-dialog" aria-labelledby="todo-clear-title" aria-describedby="todo-clear-description">
-    <h2 id="todo-clear-title">Fjerne avkryssede oppgaver?</h2>
-    <p id="todo-clear-description">Oppgavene du har krysset av, fjernes fra lista.</p>
-    <form method="dialog" class="form-actions">
-      <button class="text-button" type="submit" value="cancel" autofocus>Avbryt</button>
-      <button class="primary" type="submit" value="delete">Fjern oppgaver</button>
-    </form>
-  </dialog>
 <dialog class="motivation-overlay" id="motivation-overlay" aria-label="Motivasjon"><div class="motivation-card" role="button" tabindex="0" aria-label="Lukk motivasjon" aria-describedby="motivation-message" autofocus><p id="motivation-message"></p></div></dialog>
   <div class="bottom-menu" id="bottom-menu" hidden>
     <nav aria-label="Hovedmeny">

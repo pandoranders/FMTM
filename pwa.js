@@ -29,6 +29,19 @@
   standalone.addEventListener('change', update);
   update();
   if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    const alreadyControlled = Boolean(navigator.serviceWorker.controller);
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (alreadyControlled && !refreshing) {
+        refreshing = true;
+        location.reload();
+      }
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        navigator.serviceWorker.getRegistration().then(registration => registration?.update()).catch(() => {});
+      }
+    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' })
         .catch(error => console.warn('Service worker registration failed', error));
