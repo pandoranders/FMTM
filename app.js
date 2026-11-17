@@ -81,17 +81,41 @@
   window.addEventListener("hashchange", showScreen);
 
   const bearMessages = byId("bear-messages");
+  const bearActions = byId("bear-actions");
+  const bearNavigation = byId("bear-navigation");
   let bearRequest = 0;
+
+  function updateBearDots() {
+    const total = bearMessages.children.length;
+    if (!total || !bearMessages.clientWidth) return;
+    const current = Math.min(total - 1, Math.max(0, Math.round(bearMessages.scrollLeft / bearMessages.clientWidth)));
+    [...bearActions.children].forEach((button, index) => { button.hidden = Math.floor(index / 4) !== current; });
+    if (total < 2) return;
+    const visible = Math.min(total, 5);
+    const first = Math.min(Math.max(current - 2, 0), total - visible);
+    const label = "Beskjed " + (current + 1) + " av " + total;
+    if (bearNavigation.getAttribute("aria-label") === label && bearNavigation.children.length === visible) return;
+    bearNavigation.setAttribute("aria-label", label);
+    bearNavigation.replaceChildren(...Array.from({ length: visible }, (_, index) => {
+      const dot = document.createElement("span");
+      dot.className = "bear-dot";
+      dot.classList.toggle("is-active", first + index === current);
+      return dot;
+    }));
+  }
 
   async function loadBearMessages() {
     const request = ++bearRequest;
     const user = activeUser;
     bearMessages.hidden = true;
-    byId("bear-navigation").hidden = true;
+    bearNavigation.hidden = true;
     bearMessages.replaceChildren();
+    bearActions.replaceChildren();
+    bearActions.hidden = true;
+    message("bear-heart-status", "");
     message("bear-status", "Henter beskjeder …");
     const { data, error } = await client.from("bear_messages")
-      .select("title,body").order("created_at", { ascending: false }).order("id");
+      .select("id,title,body,heart_count,fire_count,bear_count,unicorn_count").order("created_at", { ascending: false }).order("id");
     if (request !== bearRequest || user !== activeUser) return;
     if (error) {
       message("bear-status", "Kunne ikke hente beskjedene.", true);
@@ -104,12 +128,85 @@
       title.textContent = item.title;
       body.textContent = item.body;
       card.append(title, body);
+      for (const reaction of ["fire", "heart", "bear", "unicorn"]) {
+        const button = makeBearHeartButton(item, reaction);
+        button.hidden = bearMessages.children.length > 0;
+        bearActions.append(button);
+      }
       bearMessages.append(card);
     }
     message("bear-status", data.length ? "" : "Ingen beskjeder fra bjørnen ennå.");
     bearMessages.hidden = data.length === 0;
+    bearActions.hidden = data.length === 0;
     bearMessages.scrollLeft = 0;
-    byId("bear-navigation").hidden = data.length < 2;
+    bearNavigation.hidden = data.length < 2;
+    updateBearDots();
+  }
+
+  function makeBearHeartButton(item, reaction) {
+    const symbols = { fire: 0x1f525, heart: 0x1f496, bear: 0x1f43b, unicorn: 0x1f984 };
+    const labels = { fire: "flammer", heart: "hjerter", bear: "bjørner", unicorn: "enhjørninger" };
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "bear-heart-button";
+    button.innerHTML = '<span class="bear-heart-icon" aria-hidden="true">&#x1F496;</span><span></span>';
+    button.firstElementChild.textContent = String.fromCodePoint(symbols[reaction]);
+    const count = button.lastElementChild;
+    let saved = item[reaction + "_count"];
+    let pending = 0;
+    let queue = Promise.resolve();
+
+    function renderCount() {
+      count.textContent = saved + pending;
+      button.setAttribute("aria-label", "Gi reaksjon. " + count.textContent + " " + labels[reaction]);
+    }
+
+    renderCount();
+    button.addEventListener("click", () => {
+      burstBearHearts(button, symbols[reaction]);
+      pending++;
+      renderCount();
+      queue = queue.then(async () => {
+        try {
+          const { data, error } = await client.rpc("add_bear_reaction", { message_id: item.id, reaction });
+          if (error) throw error;
+          saved = data;
+        } catch {
+          message("bear-heart-status", "Kunne ikke lagre reaksjonen. Prøv igjen.", true);
+        } finally {
+          pending--;
+          renderCount();
+        }
+      });
+    });
+    return button;
+  }
+
+  function burstBearHearts(button, symbol) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const rect = button.getBoundingClientRect();
+    const layer = document.createElement("div");
+    layer.className = "celebration bear-reaction-burst";
+    layer.setAttribute("aria-hidden", "true");
+    document.body.append(layer);
+    for (let index = 0; index < 50; index++) {
+      const heart = document.createElement("span");
+      heart.className = "celebration-sparkle";
+      heart.textContent = String.fromCodePoint(symbol);
+      heart.style.left = (rect.left + rect.width / 2) + "px";
+      heart.style.top = (rect.top + rect.height / 2) + "px";
+      heart.style.fontSize = (14 + Math.random() * 14) + "px";
+      layer.append(heart);
+      const x = (Math.random() - .5) * Math.min(window.innerWidth * 1.4, 1000);
+      const y = -(140 + Math.random() * 420);
+      const duration = 1200 + Math.random() * 1000;
+      heart.animate([
+        { transform: "translate(-50%, -50%) scale(.45)", opacity: 1 },
+        { opacity: 1, offset: 300 / duration },
+        { transform: "translate(calc(-50% + " + x + "px), calc(-50% + " + y + "px)) scale(1)", opacity: 0 }
+      ], { duration, easing: "linear" });
+    }
+    setTimeout(() => layer.remove(), 2300);
   }
 
   function moveBearMessage(direction) {
@@ -117,13 +214,17 @@
     bearMessages.scrollBy({ left: direction * bearMessages.clientWidth, behavior: reducedMotion ? "instant" : "smooth" });
   }
 
-  byId("bear-previous").addEventListener("click", () => moveBearMessage(-1));
-  byId("bear-next").addEventListener("click", () => moveBearMessage(1));
+  bearMessages.addEventListener("scroll", updateBearDots, { passive: true });
+  bearMessages.addEventListener("keydown", event => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    moveBearMessage(event.key === "ArrowLeft" ? -1 : 1);
+  });
 
   // Touch and trackpad use native scrolling and snap. Mouse drag changes one card.
   let bearDrag;
   bearMessages.addEventListener("pointerdown", event => {
-    if (event.pointerType !== "mouse" || event.button !== 0 || bearMessages.children.length < 2) return;
+    if (event.target.closest("button") || event.pointerType !== "mouse" || event.button !== 0 || bearMessages.children.length < 2) return;
     event.preventDefault();
     bearMessages.setPointerCapture(event.pointerId);
     bearDrag = { id: event.pointerId, x: event.clientX, y: event.clientY };
@@ -144,13 +245,16 @@
     byId("todo-list").replaceChildren(...todoItems.map(item => {
       const row = document.createElement("li");
       const label = document.createElement("label");
+      label.className = "task-label";
       const checkbox = document.createElement("input");
+      checkbox.className = "task-checkbox";
       checkbox.type = "checkbox";
       checkbox.checked = item.done;
       checkbox.disabled = !todoReady || todoBusy;
       const title = document.createElement("span");
+      title.className = "task-title";
       title.textContent = item.title;
-      label.append(checkbox, title);
+      label.append(checkbox, makeHeart(), title);
       row.append(label);
       checkbox.addEventListener("change", async () => {
         const done = checkbox.checked;

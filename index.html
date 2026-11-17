@@ -11,10 +11,10 @@
   <script defer src="./pwa.js?v=1"></script>
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=bear-banner-colors">
+  <link rel="stylesheet" href="./style.css?v=bear-reactions-no-glow">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
-  <script defer src="./app.js?v=bear-gestures"></script>
+  <script defer src="./app.js?v=reaction-fade-delay"></script>
 </head>
 <body>
   <main class="shell">
@@ -133,15 +133,14 @@
     </section>
     <section id="bear-screen" aria-label="A message from the Bear" hidden>
       <header class="banner screen-banner">
-        <img src="./bear-banner.jpg" alt="A message from the Bear" width="1983" height="793">
+        <img src="./bear-banner-olive.jpg" alt="A message from the Bear" width="1152" height="478">
       </header>
       <div class="bear-content">
         <p id="bear-status" class="status-message" role="status"></p>
         <div id="bear-messages" class="bear-messages" role="region" aria-label="Beskjeder fra bjørnen" tabindex="0" hidden></div>
-        <div id="bear-navigation" class="bear-navigation" hidden>
-          <button class="icon-button" id="bear-previous" type="button" aria-label="Forrige beskjed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
-          <button class="icon-button" id="bear-next" type="button" aria-label="Neste beskjed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
-        </div>
+        <div id="bear-actions" class="screen-actions" hidden></div>
+        <p id="bear-heart-status" class="status-message" role="status"></p>
+        <div id="bear-navigation" class="bear-navigation" role="img" hidden></div>
       </div>
     </section>
   </main>
@@ -156,9 +155,9 @@
 <dialog class="motivation-overlay" id="motivation-overlay" aria-label="Motivasjon"><div class="motivation-card" role="button" tabindex="0" aria-label="Lukk motivasjon" aria-describedby="motivation-message" autofocus><p id="motivation-message"></p></div></dialog>
   <div class="bottom-menu" id="bottom-menu" hidden>
     <nav aria-label="Hovedmeny">
-      <a href="#house" data-screen-link="house" aria-current="page">House</a>
-      <a href="#todo" data-screen-link="todo">Todo</a>
-      <a href="#bear" data-screen-link="bear">Bear</a>
+      <a href="#house" data-screen-link="house" aria-current="page" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M4 11 11 5l7 6v9H4z"/><path d="m2 12 9-8 9 8M5 10v10h12v-7M9 20v-5h4v5m8-17v5m-2.5-2.5h5"/></svg><span>Home Magic</span></a>
+      <a href="#todo" data-screen-link="todo" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="m15 3 1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/><path d="m4 20 8-8m-7-8v4M3 6h4m12 9v4m-2-2h4"/></svg><span>Little Quests</span></a>
+      <a href="#bear" data-screen-link="bear" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 9a3 3 0 1 1 4-4 9 9 0 0 1 6 0 3 3 0 1 1 4 4c1 2 1 4 0 5H5c-1-1-1-3 0-5Z"/><path d="M9 9h.01M15 9h.01"/><rect x="6" y="13" width="12" height="8" rx="1.5" fill="var(--icon-fill)"/><path d="m7 14 5 4 5-4"/></svg><span>Bear Mail</span></a>
     </nav>
   </div>
 </body>

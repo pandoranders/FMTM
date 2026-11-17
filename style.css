@@ -1,5 +1,6 @@
 @import url("https://cdn.jsdelivr.net/npm/@fontsource/caveat@5/700.css");
 @import url("https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5/400.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5/600.css");
 @import url("https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5/700.css");
 
 :root {
@@ -26,7 +27,7 @@ button, summary, input[type="checkbox"] { cursor: pointer; }
 .banner h1 { margin: 0; text-align: center; color: var(--accent); }
 .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .room-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1rem, 5vw, 3rem); }
-#app-content { padding: clamp(0.8rem, 3.2vw, 1.65rem) clamp(1rem, 4.5vw, 2.4rem) 0; }
+#app-content, .todo-content { padding: clamp(1.3rem, 4vw, 2.15rem) clamp(1rem, 4.5vw, 2.4rem) 0; }
 .room { margin: 0 0 1.15rem; }
 .room h2, .todo-heading { margin: 0 0 .2rem; font: 700 clamp(1.5rem, 4.1vw, 2rem)/1.1 "Caveat", cursive; }
 .task-list { list-style: none; margin: 0; padding: 0; }
@@ -112,7 +113,7 @@ body:has(.task-manager[open], .motivation-overlay[open]) { overflow: hidden; }
 
 /* Leave room for the fixed menu, actions and phone safe area. */
 :root {
-  --menu-height: 58px;
+  --menu-height: 62px;
   --menu-offset: calc(12px + env(safe-area-inset-bottom, 0px));
   --action-height: 48px;
   --fab-clearance: calc(var(--menu-offset) + var(--menu-height) + var(--action-height) + 20px);
@@ -147,6 +148,27 @@ html[data-screen] body { padding-bottom: var(--fab-clearance); }
   letter-spacing: .05em;
   text-decoration: none;
   text-transform: uppercase;
+}
+.bottom-menu a {
+  place-content: center;
+  gap: 3px;
+  line-height: 1.2;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  font-size: clamp(.625rem, 2.9vw, .8125rem);
+}
+.menu-icon {
+  --icon-fill: color-mix(in srgb, currentColor 28%, transparent);
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .bottom-menu a[aria-current="page"] { color: white; background: var(--menu-active); }
 .screen-actions {
@@ -201,12 +223,12 @@ html[data-screen="todo"] {
   --menu-active: #592363;
 }
 html[data-screen="bear"] {
-  --backdrop: #8d7644;
-  --page: #f2d7ad;
-  --ink: #432817;
-  --accent: #653112;
-  --menu-active: #653112;
-  --fab-clearance: calc(var(--menu-offset) + var(--menu-height) + 20px);
+  --backdrop: #5d6923;
+  --page: #6b7826;
+  --ink: #fff6d5;
+  --accent: #fff6d5;
+  --menu-active: #394413;
+  --fab-clearance: calc(var(--menu-offset) + var(--menu-height) + var(--action-height) + 20px);
 }
 html[data-screen="bear"] .bottom-menu nav { background: var(--page); }
 html:is([data-screen="todo"], [data-screen="bear"]) .shell {
@@ -216,31 +238,17 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 }
 #todo-screen, #bear-screen { flex: 1; min-width: 0; }
 .screen-banner { background: var(--page); }
-.todo-content { width: min(100%, 420px); margin-inline: auto; padding: 20px 16px 24px; }
-.todo-heading { text-align: center; color: var(--accent); margin-bottom: .75rem; }
-#todo-add { min-height: 44px; margin-top: .25rem; margin-inline: auto; }
+.todo-content { width: 100%; padding-bottom: 24px; }
+.todo-heading { color: var(--accent); }
+#todo-add { min-height: 44px; margin-top: .25rem; }
 #todo-add[aria-expanded="true"] { display: none; }
 .todo-list { list-style: none; margin: 0; padding: 0; }
-.todo-list label { display: flex; gap: 14px; align-items: center; min-height: 44px; cursor: pointer; }
-.todo-list input {
-  appearance: none;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  margin: 0;
-  border: 2px solid #8e3ab3;
-  border-radius: 7px;
-  background: #ebbbf5;
+.todo-list {
+  --heart: #ce94e7;
+  --heart-edge: #8e3ab3;
 }
-.todo-list input:checked {
-  background: #8e3ab3 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m2 8 4 4 8-8' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
-}
-@media (forced-colors: active) {
-  .todo-list input { appearance: auto; }
-  .todo-list input:checked { background: none; }
-}
+.todo-list .task-checkbox:checked + .heart .heart-shape { fill: #8e3ab3; }
+.todo-list .heart-check { stroke: white; }
 .todo-clear-dialog {
   width: min(24rem, calc(100% - 2rem));
   background: #fbecff;
@@ -250,7 +258,7 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 .todo-clear-dialog .form-actions { justify-content: flex-end; }
 .todo-clear-dialog .primary { background: var(--accent); }
 .todo-list span { overflow-wrap: anywhere; }
-.todo-list input:checked + span { text-decoration: line-through; }
+.task-checkbox:checked + .heart + span { opacity: .75; }
 .todo-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .todo-form input { flex: 1 1 140px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
 #todo-screen { display: flex; flex-direction: column; }
@@ -261,6 +269,8 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 }
 .todo-content:has(.todo-empty:not([hidden])) .todo-heading,
 .todo-content:has(.todo-form:not([hidden])) .todo-empty { display: none; }
+.todo-list:not(:empty) ~ .todo-compose #todo-add { margin-top: .5rem; }
+.todo-compose:has(.todo-empty:not([hidden])) #todo-add { margin-inline: auto; }
 .todo-compose:has(.todo-empty:not([hidden])) {
   flex: 1;
   display: flex;
@@ -288,7 +298,9 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 .todo-form .icon-button:not(.primary):hover { background: #e7b5f2; }
 #todo-feedback:empty { display: none; }
 #bear-screen { display: flex; flex-direction: column; gap: 14px; background: var(--backdrop); }
-#bear-screen .banner, .bear-content { border-radius: 20px; }
+#bear-screen { gap: 0; }
+#bear-screen .banner { aspect-ratio: 1152 / 478; border-radius: 20px 20px 0 0; }
+.bear-content { border-radius: 0 0 20px 20px; }
 .bear-content { flex: 1; min-height: 140px; background: var(--page); }
 .motivation-overlay { position: fixed; inset: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; margin: 0; border: 0; padding: 24px 24px var(--fab-clearance); background: transparent; color: var(--ink); overscroll-behavior: contain; }
 .motivation-overlay[open] { display: grid; place-items: center; }
@@ -348,24 +360,54 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 .bear-content:has(.bear-navigation:not([hidden])) article { padding-bottom: 4.5rem; }
 .bear-navigation {
   position: absolute;
-  inset: auto 0 .5rem;
+  inset: auto 0 1.25rem;
   display: flex;
   justify-content: center;
   gap: .5rem;
   pointer-events: none;
 }
-.bear-navigation button {
-  min-height: 44px;
+.bear-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  pointer-events: auto;
+  background: rgb(255 255 255 / 42%);
 }
-.bear-navigation button:hover { background: #ffffff26; }
-.bear-navigation svg {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+.bear-dot.is-active { background: white; }
 .bear-admin { width: min(100%, 32rem); margin: 2rem auto; }
 .bear-admin textarea { width: 100%; padding: .75rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; resize: vertical; }
+
+.bear-heart-button {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-width: 4rem;
+  min-height: var(--action-height);
+  margin-top: 0;
+  padding: .35rem .9rem;
+  border: 0;
+  border-radius: 999px;
+  background: white;
+  color: #542061;
+  box-shadow: 0 4px 16px #561b1530;
+  font-variant-numeric: tabular-nums;
+}
+#bear-actions .bear-heart-button {
+  display: inline-flex;
+  min-width: 4rem;
+  width: auto;
+  color: #542061;
+}
+.bear-heart-button > span:last-child {
+  color: #542061;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.bear-heart-icon { font-size: 1.55rem; line-height: 1; }
+#bear-heart-status { padding-inline: 1rem; }
+
+#bear-actions { gap: 8px; }
+#bear-actions .bear-heart-button { min-width: 0; padding-inline: 12px; gap: 6px; letter-spacing: 0; }
+
+.bear-reaction-burst .celebration-sparkle { text-shadow: none; }

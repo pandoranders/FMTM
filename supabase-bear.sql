@@ -35,4 +35,61 @@ create policy "FMTM account can delete bear messages"
     and (select auth.jwt() -> 'app_metadata' ->> 'provider') = 'email'
   );
 
+alter table public.bear_messages
+  add column if not exists heart_count bigint not null default 0 check (heart_count >= 0);
+
+create or replace function public.add_bear_heart(message_id uuid)
+returns bigint
+language plpgsql
+security definer
+set search_path = ''
+as $bear_heart$
+declare
+  updated_count bigint;
+begin
+  if (auth.jwt() ->> 'email') is distinct from 'pandoranders@gmail.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'provider') is distinct from 'email' then
+    raise exception 'Access denied' using errcode = '42501';
+  end if;
+
+  update public.bear_messages
+    set heart_count = heart_count + 1
+    where id = message_id
+    returning heart_count into strict updated_count;
+  return updated_count;
+end;
+$bear_heart$;
+
+revoke all on function public.add_bear_heart(uuid) from public, anon;
+grant execute on function public.add_bear_heart(uuid) to authenticated;
+
+alter table public.bear_messages
+  add column if not exists fire_count bigint not null default 0 check (fire_count >= 0),
+  add column if not exists bear_count bigint not null default 0 check (bear_count >= 0),
+  add column if not exists unicorn_count bigint not null default 0 check (unicorn_count >= 0);
+
+create or replace function public.add_bear_reaction(message_id uuid, reaction text)
+returns bigint
+language plpgsql
+security definer
+set search_path = ''
+as $reaction$
+declare
+  updated_count bigint;
+begin
+  if (auth.jwt() ->> 'email') is distinct from 'pandoranders@gmail.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'provider') is distinct from 'email' then
+    raise exception 'Access denied' using errcode = '42501';
+  end if;
+  if reaction not in ('fire', 'heart', 'bear', 'unicorn') or reaction is null then
+    raise exception 'Invalid reaction';
+  end if;
+  execute format('update public.bear_messages set %1$I = %1$I + 1 where id = $1 returning %1$I', reaction || '_count')
+    into strict updated_count using message_id;
+  return updated_count;
+end;
+$reaction$;
+revoke all on function public.add_bear_reaction(uuid, text) from public, anon;
+grant execute on function public.add_bear_reaction(uuid, text) to authenticated;
+
 commit;
