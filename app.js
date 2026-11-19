@@ -57,11 +57,15 @@
   function showScreen() {
     if (recoveringPassword || !activeUser) return;
     const requested = location.hash.slice(1);
-    const screen = screenLinks.some(link => link.dataset.screenLink === requested) ? requested : "house";
+    const screen = screenLinks.some(link => link.dataset.screenLink === requested) ? requested : "todo";
     document.documentElement.dataset.screen = screen;
     byId("house-banner").hidden = screen !== "house";
     byId("app-content").hidden = screen !== "house";
     byId("todo-screen").hidden = screen !== "todo";
+    if (screen !== "todo") {
+      byId("quest-cheer").hidden = true;
+      document.querySelectorAll(".quest-confetti").forEach(layer => layer.remove());
+    }
     byId("bear-screen").hidden = screen !== "bear";
     byId("bottom-menu").hidden = false;
     for (const link of screenLinks) {
@@ -73,6 +77,7 @@
     window.scrollTo(0, 0);
     if (screen === "todo") loadTodo();
     if (screen === "bear") loadBearMessages();
+    else checkBearUnread();
   }
 
   window.addEventListener("hashchange", showScreen);
@@ -101,6 +106,34 @@
     }));
   }
 
+  const bearTab = document.querySelector('[data-screen-link="bear"]');
+  let readBearId;
+  let bearUnreadRequest = 0;
+
+  function setBearUnread(unread) {
+    bearTab.classList.toggle("has-unread-mail", unread);
+    if (unread) bearTab.setAttribute("aria-label", "Bear Mail, new message");
+    else bearTab.removeAttribute("aria-label");
+  }
+
+  function seenBearId(user) {
+    try { return readBearId ?? localStorage.getItem("fmtm-bear-seen:" + user); }
+    catch { return readBearId; }
+  }
+
+  async function checkBearUnread() {
+    if (!activeUser || document.hidden || document.documentElement.dataset.screen === "bear") return;
+    const user = activeUser;
+    const request = ++bearUnreadRequest;
+    const { data, error } = await client.from("bear_messages").select("id")
+      .order("created_at", { ascending: false }).order("id").limit(1);
+    if (error || user !== activeUser || request !== bearUnreadRequest || document.documentElement.dataset.screen === "bear") return;
+    setBearUnread(Boolean(data[0] && data[0].id !== seenBearId(user)));
+  }
+
+  document.addEventListener("visibilitychange", checkBearUnread);
+  setInterval(checkBearUnread, 60000);
+
   async function loadBearMessages() {
     const request = ++bearRequest;
     const user = activeUser;
@@ -117,6 +150,11 @@
     if (error) {
       message("bear-status", "Kunne ikke hente beskjedene.", true);
       return;
+    }
+    if (document.documentElement.dataset.screen === "bear" && data[0]) {
+      readBearId = data[0].id;
+      try { localStorage.setItem("fmtm-bear-seen:" + user, readBearId); } catch {}
+      setBearUnread(false);
     }
     for (const item of data) {
       const card = document.createElement("article");
@@ -234,6 +272,59 @@
   });
   bearMessages.addEventListener("lostpointercapture", () => { bearDrag = undefined; });
 
+  const questCheers = [
+    "BAM!", "BOOYAH!", "LEVEL UP!", "TADAAA!", "DING DING!", "HOLY MOLY!",
+    "COMPLETED!", "CRUSHED IT!", "ONE LESS QUEST!", "TASK TOASTED",
+    "POFF!", "ANOTHER ONE DOWN!", "GET OUTTA HERE!"
+  ];
+  let lastQuestCheer = -1;
+  let questBubbleTimer;
+
+  function celebrateQuest() {
+    const bubble = byId("quest-cheer");
+    let index = Math.floor(Math.random() * (questCheers.length - 1));
+    if (index >= lastQuestCheer) index++;
+    lastQuestCheer = index;
+    clearTimeout(questBubbleTimer);
+    bubble.textContent = questCheers[index];
+    bubble.hidden = false;
+    bubble.getAnimations().forEach(animation => animation.cancel());
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    bubble.animate(reduced ? [{ opacity: 0 }, { opacity: 1 }] : [
+      { transform: "translateY(-120px)", opacity: 0 },
+      { transform: "translateY(10px)", opacity: 1, offset: .7 },
+      { transform: "translateY(0)", opacity: 1 }
+    ], { duration: reduced ? 120 : 500, easing: "ease-out" });
+    questBubbleTimer = setTimeout(() => { bubble.hidden = true; }, 2200);
+    if (reduced) return;
+
+    const layer = document.createElement("div");
+    layer.className = "celebration quest-confetti";
+    layer.setAttribute("aria-hidden", "true");
+    document.body.append(layer);
+    const colors = ["#a451d9", "#ed83bd", "#ffd65b", "#fff4bc", "#77d7c8", "#ffffff"];
+    const rare = Math.random() < .05;
+    const symbol = rare ? String.fromCodePoint(Math.random() < .5 ? 0x1f43e : 0x1f984) : "";
+    for (let i = 0; i < (rare ? 42 : 70); i++) {
+      const piece = document.createElement("span");
+      piece.className = "quest-confetti-piece";
+      piece.style.left = Math.random() * 100 + "%";
+      if (rare) {
+        piece.textContent = symbol;
+        piece.classList.add("quest-confetti-symbol");
+      } else piece.style.background = colors[i % colors.length];
+      piece.style.borderRadius = i % 3 === 0 ? "50%" : "2px";
+      layer.append(piece);
+      const drift = (Math.random() - .5) * 180;
+      piece.animate([
+        { transform: "translateY(-30px) rotate(0deg)", opacity: 1 },
+        { opacity: 1, offset: .8 },
+        { transform: "translate(" + drift + "px, " + (innerHeight + 50) + "px) rotate(" + (360 + Math.random() * 540) + "deg)", opacity: 0 }
+      ], { duration: 1800 + Math.random() * 900, delay: Math.random() * 350, easing: "linear", fill: "both" });
+    }
+    setTimeout(() => layer.remove(), 3100);
+  }
+
   function renderTodo() {
     byId("todo-empty").hidden = !todoReady || todoItems.length > 0;
     updateTodoSubmit();
@@ -265,7 +356,8 @@
       checkbox.addEventListener("change", async () => {
         const done = checkbox.checked;
         checkbox.checked = item.done;
-        await changeTodo(() => client.from("todo_items").update({ done }).eq("id", item.id));
+        const saved = await changeTodo(() => client.from("todo_items").update({ done }).eq("id", item.id));
+        if (saved && done && !item.done && document.documentElement.dataset.screen === "todo") celebrateQuest();
         byId("todo-list").querySelectorAll("input")[todoItems.findIndex(task => task.id === item.id)]?.focus();
       });
       return row;
@@ -853,6 +945,8 @@
       manager.close();
       hideMotivation();
       activeUser = null;
+      readBearId = undefined;
+      setBearUnread(false);
       ++todoRequest;
       todoItems = [];
       todoReady = false;

@@ -445,3 +445,51 @@ button, a, label { touch-action: manipulation; }
 }
 
 #todo-form #todo-add:disabled { color: #b9a7c1; opacity: 1; }
+
+.quest-cheer {
+  position: fixed;
+  top: calc(20px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  translate: -50% 0;
+  z-index: 1001;
+  max-width: calc(100% - 32px);
+  padding: 12px 24px;
+  border-radius: 22px;
+  background: white;
+  color: #672577;
+  box-shadow: 0 6px 24px #54206130;
+  font: 700 32px/1.1 "Caveat", cursive;
+  text-align: center;
+  pointer-events: none;
+}
+.quest-cheer::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: calc(50% - 8px);
+  width: 16px;
+  height: 16px;
+  background: white;
+  rotate: 45deg;
+}
+.quest-confetti-piece { position: absolute; top: 0; width: 8px; height: 12px; }
+
+
+@media (prefers-reduced-motion: no-preference) {
+  .bottom-menu .has-unread-mail .menu-icon {
+    animation: bear-mail-bounce 3s ease-in-out infinite;
+  }
+}
+@keyframes bear-mail-bounce {
+  0%, 32%, 100% { transform: none; }
+  10% { transform: translateY(-6px) rotate(-12deg); }
+  18% { transform: translateY(-2px) rotate(10deg); }
+  25% { transform: translateY(-3px) rotate(-5deg); }
+}
+.quest-confetti-piece.quest-confetti-symbol {
+  width: auto;
+  height: auto;
+  font-size: 18px;
+  line-height: 1;
+}
+
