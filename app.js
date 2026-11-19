@@ -309,10 +309,12 @@
     bubble.getAnimations().forEach(animation => animation.cancel());
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     bubble.animate(reduced ? [{ opacity: 0 }, { opacity: 1 }] : [
-      { transform: "translateY(-120px)", opacity: 0 },
-      { transform: "translateY(10px)", opacity: 1, offset: .7 },
+      { transform: "translateY(-150px)", opacity: 0, easing: "ease-in" },
+      { transform: "translateY(38px)", opacity: 1, offset: .39, easing: "ease-out" },
+      { transform: "translateY(-14px)", offset: .63, easing: "ease-in" },
+      { transform: "translateY(10px)", offset: .82, easing: "ease-out" },
       { transform: "translateY(0)", opacity: 1 }
-    ], { duration: reduced ? 120 : 500, easing: "ease-out" });
+    ], { duration: reduced ? 120 : 540 });
     questBubbleTimer = setTimeout(() => { bubble.hidden = true; }, 2200);
     if (reduced) return;
 
