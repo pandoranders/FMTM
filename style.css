@@ -22,8 +22,8 @@ body { margin: 0; padding: 24px clamp(12px, 2vw, 24px); }
 button, input, select { font: inherit; color: inherit; }
 button, summary, input[type="checkbox"] { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.shell { width: min(100%, 850px); margin-inline: auto; padding-bottom: 1.5rem; background: var(--page); border-radius: 20px; }
-.banner { border-radius: 20px 20px 0 0; position: relative; display: grid; place-items: center; isolation: isolate; aspect-ratio: 1233 / 496; overflow: hidden; background: linear-gradient(155deg, #f4b9d6, var(--page) 80%); }
+.shell { --shell-radius: 32px; width: min(100%, 850px); margin-inline: auto; padding-bottom: 1.5rem; background: var(--page); border-radius: var(--shell-radius); }
+.banner { border-radius: var(--shell-radius, 20px) var(--shell-radius, 20px) 0 0; position: relative; display: grid; place-items: center; isolation: isolate; aspect-ratio: 1233 / 496; overflow: hidden; background: linear-gradient(155deg, #f4b9d6, var(--page) 80%); }
 .banner h1 { margin: 0; text-align: center; color: var(--accent); }
 .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .room-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1rem, 5vw, 3rem); }
@@ -304,8 +304,9 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 #todo-feedback:empty { display: none; }
 #bear-screen { display: flex; flex-direction: column; gap: 14px; background: var(--backdrop); }
 #bear-screen { gap: 0; }
-#bear-screen .banner { aspect-ratio: 1152 / 478; border-radius: 20px 20px 0 0; }
-.bear-content { border-radius: 0 0 20px 20px; }
+#bear-screen { border-radius: inherit; }
+#bear-screen .banner { aspect-ratio: 1152 / 478; }
+.bear-content { border-radius: 0 0 var(--shell-radius) var(--shell-radius); }
 .bear-content { flex: 1; min-height: 140px; background: var(--page); }
 .motivation-overlay { position: fixed; inset: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; margin: 0; border: 0; padding: 24px 24px var(--fab-clearance); background: transparent; color: var(--ink); overscroll-behavior: contain; }
 .motivation-overlay[open] { display: grid; place-items: center; }
