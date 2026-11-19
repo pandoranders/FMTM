@@ -11,7 +11,7 @@
   <script defer src="./pwa.js?v=fresh-assets"></script>
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=bottom-menu-blur">
+  <link rel="stylesheet" href="./style.css?v=menu-backdrop-fade">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
   <script defer src="./app.js?v=bear-envelope-pop"></script>
@@ -140,6 +140,7 @@
   </main>
   <div id="quest-cheer" class="quest-cheer" role="status" aria-live="polite" hidden></div>
 <dialog class="motivation-overlay" id="motivation-overlay" aria-label="Motivasjon"><div class="motivation-card" role="button" tabindex="0" aria-label="Lukk motivasjon" aria-describedby="motivation-message" autofocus><p id="motivation-message"></p></div></dialog>
+  <div class="bottom-menu-backdrop" aria-hidden="true"></div>
   <div class="bottom-menu" id="bottom-menu" hidden>
     <nav aria-label="Hovedmeny">
       <a href="#house" data-screen-link="house" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M4 11 11 5l7 6v9H4z"/><path d="m2 12 9-8 9 8M5 10v10h12v-7M9 20v-5h4v5m8-17v5m-2.5-2.5h5"/></svg><span>Home Magic</span></a>
