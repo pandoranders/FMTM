@@ -231,6 +231,17 @@ html[data-screen="bear"] {
   --fab-clearance: calc(var(--menu-offset) + var(--menu-height) + var(--action-height) + 20px);
 }
 html[data-screen="bear"] .bottom-menu nav { background: var(--page); }
+
+@supports ((backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px))) {
+  .bottom-menu nav {
+    background: color-mix(in srgb, var(--backdrop) 54%, rgb(255 255 255 / 62%));
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  html[data-screen="bear"] .bottom-menu nav {
+    background: color-mix(in srgb, var(--page) 84%, transparent);
+  }
+}
 html:is([data-screen="todo"], [data-screen="bear"]) .shell {
   min-height: max(0px, calc(100dvh - var(--fab-clearance) - 24px));
   padding-bottom: 0;
