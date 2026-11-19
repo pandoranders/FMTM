@@ -135,12 +135,15 @@ html[data-screen] body { padding-bottom: var(--fab-clearance); }
   inset: auto 0 0;
   height: calc(var(--menu-offset) + var(--menu-height) / 2);
   pointer-events: none;
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(26px);
+  backdrop-filter: blur(26px);
   -webkit-mask-image: linear-gradient(to top, #000, transparent);
   mask-image: linear-gradient(to top, #000, transparent);
 }
 .bottom-menu-backdrop:has(+ .bottom-menu[hidden]) { display: none; }
+html[data-screen="todo"] .bottom-menu-backdrop {
+  height: calc(var(--menu-offset) + var(--menu-height) + 10px + var(--action-height) / 2);
+}
 .bottom-menu { bottom: var(--menu-offset); }
 .bottom-menu nav {
   display: grid;
