@@ -230,7 +230,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
 .screen-actions button:disabled, #todo-add:disabled { opacity: .72; cursor: default; }
 
 html[data-screen="todo"] {
-  --backdrop: #a451d9;
+  --backdrop: #BC78EA;
   --page: #f2ccfa;
   --ink: #542061;
   --accent: #672577;
