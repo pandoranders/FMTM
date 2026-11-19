@@ -110,6 +110,24 @@
   let readBearId;
   let bearUnreadRequest = 0;
 
+  const unreadEnvelope = bearTab.querySelector(".bear-unread-envelope");
+  bearTab.addEventListener("click", event => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+        !bearTab.classList.contains("has-unread-mail") ||
+        unreadEnvelope.classList.contains("is-popping") ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    unreadEnvelope.classList.add("is-popping");
+    const pop = unreadEnvelope.animate([
+      { transform: "scale(1)", opacity: 1 },
+      { transform: "translateY(-4px) scale(1.45) rotate(-12deg)", opacity: 1, offset: .35 },
+      { transform: "translateY(-12px) scale(.6) rotate(14deg)", opacity: 0 }
+    ], { duration: 420, easing: "ease-out", fill: "forwards" });
+    pop.onfinish = () => {
+      unreadEnvelope.classList.remove("is-popping");
+      pop.cancel();
+    };
+  });
+
   function setBearUnread(unread) {
     bearTab.classList.toggle("has-unread-mail", unread);
     if (unread) bearTab.setAttribute("aria-label", "Bear Mail, new message");

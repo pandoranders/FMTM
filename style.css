@@ -476,7 +476,7 @@ button, a, label { touch-action: manipulation; }
 
 
 @media (prefers-reduced-motion: no-preference) {
-  .bottom-menu .has-unread-mail .menu-icon {
+  .bottom-menu .has-unread-mail .bear-menu-art {
     animation: bear-mail-bounce 3s ease-in-out infinite;
   }
 }
@@ -493,3 +493,21 @@ button, a, label { touch-action: manipulation; }
   line-height: 1;
 }
 
+
+.bear-menu-art { position: relative; display: grid; }
+.bear-unread-envelope {
+  display: none;
+  position: absolute;
+  inset-block-start: -3px;
+  inset-inline-end: -7px;
+  width: 14px;
+  height: 14px;
+  fill: #ffe1a5;
+  stroke: #542061;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bear-unread-envelope path { fill: none; }
+.has-unread-mail .bear-unread-envelope,
+.bear-unread-envelope.is-popping { display: block; }
