@@ -200,7 +200,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
   background: white;
   pointer-events: auto;
 }
-:is(#app-content, #todo-screen) .screen-actions button,
+:is(#app-content, #todo-screen, #ritulas-screen) .screen-actions button,
 #todo-add {
   display: grid;
   place-items: center;
@@ -252,7 +252,7 @@ html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"]) .sh
   padding-bottom: 0;
   display: flex;
 }
-#todo-screen, #bear-screen { flex: 1; min-width: 0; }
+#todo-screen, #bear-screen, #ritulas-screen { flex: 1; min-width: 0; }
 .screen-banner { background: var(--page); }
 .todo-content { width: 100%; padding-bottom: 24px; }
 .todo-heading { color: var(--accent); }
@@ -538,17 +538,23 @@ html[data-screen="ritulas"] {
   --menu-active: #783b53;
 }
 #ritulas-screen { display: flex; flex-direction: column; min-height: max(0px, calc(100dvh - var(--fab-clearance) - 24px)); }
-#ritulas-list { --heart: #f6b995; --heart-edge: #a14864; }
+#ritulas-list { --heart: #f6b995; --heart-edge: #783b53; }
 #ritulas-list .task-checkbox:checked + .heart .heart-shape { fill: var(--heart-edge); }
 #ritulas-screen .todo-list > li { border-color: var(--line); }
-#ritulas-screen .screen-actions { gap: 24px; }
-#ritulas-screen .screen-actions button {
-  min-width: var(--action-height);
-  width: var(--action-height);
-  background: #fff;
-}
 #ritulas-motivation { font-size: 28px; line-height: 1; }
-#ritulas-done { color: var(--accent); font-weight: 700; }
+#ritulas-done {
+  margin: 18px 0 24px;
+  padding: clamp(16px, 4vw, 28px);
+  border-radius: 20px;
+  background: var(--accent);
+  color: #fff1df;
+  text-align: center;
+}
+#ritulas-done strong {
+  display: block;
+  font: 700 clamp(2rem, 7vw, 3.5rem)/1.05 Caveat, cursive;
+}
+#ritulas-done span { display: block; margin-top: 6px; }
 #ritulas-manager { background: var(--page); color: var(--ink); }
 .ritulas-manager-header {
   display: flex;
