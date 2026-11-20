@@ -998,13 +998,18 @@
   const motivationOverlay = byId("motivation-overlay");
   const ritualMotivationPhrases = [
     "SMÅ SEIRE! Ett kryss er en god start.",
-    "RUTINEMAGI! Litt gjort i dag gjør morgendagen lettere.",
     "HEIA DEG! Gjør én liten ting for deg selv nå.",
     "RO NED! Ta et glass vann og fortsett i ditt tempo.",
     "GODT NOK! Dagens rutine trenger ingen perfekt gjennomføring.",
-    "YES! En hverdagsoppgave mindre å holde i hodet.",
-    "LILLE PAUSE! Strekk på skuldrene før neste oppgave.",
-    "SE PÅ DEG! Du bygger gode vaner, ett kryss om gangen."
+    "YES! En oppgave mindre!",
+    "LITEN PAUSE! Senk skuldrene litt før du tar neste oppgave.",
+    "SE PÅ DEG! Du bygger gode vaner, ett kryss om gangen.",
+    "DEN SATT! Dagens lille gjøremål fikk en stor, fortjent hake.",
+    "HELT KONGE! Du gjorde den tingen du hadde tenkt å gjøre.",
+    "POFF! Der forsvant en «jeg gjør det etterpå».",
+    "HJERTE PÅ SAKEN! Den oppgaven hadde godt av å bli krysset av.",
+    "HVERDAGSHELT! Kapper er upraktiske uansett.",
+    "JADDA! Tid for en treat."
   ];
   const lastMotivation = new Map();
   let motivationTimer;
