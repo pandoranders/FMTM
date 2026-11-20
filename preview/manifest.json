@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "From Mediocre To Magic",
+  "short_name": "FMTM",
+  "lang": "nb",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FEDFEC",
+  "theme_color": "#F2A7D0",
+  "description": "Oppussingslista med litt ekstra magi.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

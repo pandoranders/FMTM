@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#F2A7D0">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FMTM">
+  <script defer src="./pwa.js?v=fresh-assets"></script>
+  <title>From Mediocre To Magic</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./style.css?v=ritulas-refinement">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="./supabase-config.js"></script>
+  <script defer src="./app.js?v=ritulas-refinement"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="banner" id="house-banner">
+      <h1><img src="./banner.png?v=complete" alt="From Mediocre To Magic" width="1233" height="496" fetchpriority="high"></h1>
+    </header>
+
+    <section class="auth-gate" id="auth-gate" aria-labelledby="auth-title">
+      <h2 id="auth-title">Logg inn</h2>
+      <form class="login-form" id="login-form" method="post">
+        <label for="username">Brukernavn<input id="username" name="username" autocomplete="username" readonly></label>
+        <label for="password">Passord<input id="password" name="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary" id="sign-in" type="submit" disabled>Logg inn</button>
+      </form>
+      <p class="status-message" id="auth-message" aria-live="polite"></p>
+      <button class="text-button" id="sign-out-denied" type="button" hidden>Logg ut</button>
+    </section>
+
+    <section class="auth-gate" id="recovery-gate" aria-labelledby="recovery-title" hidden>
+      <h2 id="recovery-title">Velg nytt passord</h2>
+      <form class="login-form" id="recovery-form" method="post">
+        <label for="new-password">Nytt passord<input id="new-password" type="password" autocomplete="new-password" required></label>
+        <label for="repeat-password">Gjenta passord<input id="repeat-password" type="password" autocomplete="new-password" required></label>
+        <button class="primary" type="submit">Lagre passord</button>
+        <button class="text-button" id="cancel-recovery" type="button">Avbryt</button>
+      </form>
+      <p class="status-message" id="recovery-message" role="status"></p>
+    </section>
+
+    <section id="app-content" aria-label="Oppussingslista" hidden>
+      <div class="room-grid" id="task-list"></div>
+      <p id="empty-state" class="empty" hidden></p>
+      <p id="feedback" class="status-message" role="status"></p>
+
+      <footer class="tools">
+        <div class="screen-actions">
+          <button id="open-task-manager" type="button" aria-haspopup="dialog" aria-label="Admin" title="Admin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16 4l4 4M4 20l4.5-1 12-12a2.8 2.8 0 0 0-4-4l-12 12L4 20Z"/></svg></button>
+          <button id="motivation-button" type="button" aria-haspopup="dialog" aria-label="Gi meg motivasjon!" title="Gi meg motivasjon!"><span aria-hidden="true">&#x1F984;</span></button>
+        </div>
+      </footer>
+      <dialog class="task-manager" id="task-manager" aria-labelledby="task-manager-title">
+        <header class="manager-header">
+          <button class="icon-button" id="sign-out" type="button" aria-label="Logg ut" title="Logg ut"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H4v16h5M10 12h11m-4-4 4 4-4 4"/></svg></button>
+          <h2 id="task-manager-title">Admin</h2>
+          <form method="dialog"><button class="icon-button" type="submit" aria-label="Lukk Admin" title="Lukk" autofocus><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form>
+        </header>
+        <p id="manager-feedback" class="status-message" role="status"></p>
+        <section class="manager-add-task" aria-labelledby="task-form-title">
+          <h3 id="task-form-title">Legg til oppgave</h3>
+          <form class="add-form" id="add-form" aria-labelledby="task-form-title">
+            <label for="task-input">Oppgave<input id="task-input" type="text" maxlength="180" autocomplete="off" required></label>
+            <label id="room-field" for="task-room" hidden>Rom<select id="task-room"></select></label>
+            <label id="parent-field" for="task-parent" hidden>Underoppgave til<select id="task-parent"></select></label>
+            <div class="form-actions">
+              <button class="primary" type="submit">Legg til</button>
+              <button class="text-button" id="cancel-edit" type="button" hidden>Avbryt</button>
+            </div>
+          </form>
+        </section>
+        <details class="manager-panel">
+          <summary>Oppgaver</summary>
+          <div class="manager-list-header">
+            <button class="text-button" id="clear-done" type="button">Fjern ferdige</button>
+          </div>
+          <div class="toolbar">
+            <div class="filters" role="group" aria-label="Vis oppgaver">
+              <button type="button" data-filter="all" aria-pressed="true">Alle</button>
+              <button type="button" data-filter="active" aria-pressed="false">Åpne</button>
+              <button type="button" data-filter="done" aria-pressed="false">Ferdige</button>
+            </div>
+            <span id="remaining" aria-live="polite"></span>
+          </div>
+          <p id="managed-empty" class="empty" hidden>Ingen oppgaver ennå.</p>
+          <ul class="managed-list" id="managed-tasks"></ul>
+        </details>
+        <details class="manager-panel">
+          <summary>Kategori/rom</summary>
+          <p id="room-feedback" class="status-message" role="status"></p>
+          <form class="add-form" id="room-form" hidden>
+            <label for="room-name">Romnavn<input id="room-name" type="text" maxlength="80" required></label>
+            <div class="form-actions">
+              <button class="primary" type="submit">Legg til rom</button>
+              <button class="text-button" id="cancel-room-edit" type="button" hidden>Avbryt</button>
+            </div>
+          </form>
+          <ul class="managed-list" id="managed-rooms"></ul>
+        </details>
+        <section class="pwa-install" aria-label="Installer app">
+          <button class="primary" id="install-app" type="button" hidden>Installer app</button>
+          <p id="install-help" class="status-message" hidden></p>
+        </section>
+      </dialog>
+    </section>
+    <section id="todo-screen" aria-label="My Little Quests" hidden>
+      <header class="banner screen-banner">
+        <img src="./todo-banner.jpg" alt="" width="1983" height="793">
+      </header>
+      <div class="todo-content">
+        <h2 class="todo-heading" id="todo-heading" lang="en">My Little Quests</h2>
+        <p id="todo-feedback" class="status-message" role="status"></p>
+        <ul id="todo-list" class="todo-list"></ul>
+        <div class="todo-compose">
+          <p id="todo-empty" class="todo-empty" role="status" hidden><strong>BRA JOBBA</strong><span>Ingen oppgaver igjen. Du kan slappe av, eller legg til flere oppgaver.</span></p>
+        </div>
+      </div>
+      <form class="todo-form screen-actions" id="todo-form">
+        <input id="todo-input" aria-label="Legg til ny Quest" placeholder="Legg til ny Quest..." maxlength="180" autocomplete="off" required>
+        <button id="todo-add" type="submit" aria-label="Lagre oppgave" title="Lagre oppgave" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+      </form>
+    </section>
+    <section id="ritulas-screen" aria-labelledby="ritulas-heading" hidden>
+      <header class="banner screen-banner"><img src="./ritulas-banner-simple.webp?v=storybook" alt=""></header>
+      <div class="todo-content">
+        <h2 class="todo-heading" id="ritulas-heading" lang="en">The Ritulas</h2>
+        <p id="ritulas-status" class="status-message" role="status"></p>
+        <p id="ritulas-empty" hidden>Ingen daglige oppgaver ennå.</p>
+        <p id="ritulas-done" role="status" lang="en" hidden>All done for today!</p>
+        <ul id="ritulas-list" class="todo-list"></ul>
+      </div>
+      <div class="screen-actions">
+        <button id="ritulas-edit" type="button" aria-label="Rediger daglige oppgaver" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 16-1 5 5-1L21 7l-4-4zM14 6l4 4"/></svg></button>
+        <button id="ritulas-motivation" type="button" aria-label="Gi meg motivasjon!" aria-haspopup="dialog"><span aria-hidden="true">🦄</span></button>
+      </div>
+      <dialog id="ritulas-manager" class="task-manager" aria-labelledby="ritulas-manager-heading">
+        <div class="ritulas-manager-header">
+          <h2 id="ritulas-manager-heading">Rediger daglige oppgaver</h2>
+          <form method="dialog"><button type="submit" class="icon-button" aria-label="Lukk" title="Lukk" autofocus><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form>
+        </div>
+        <p id="ritulas-edit-status" class="status-message" role="status"></p>
+        <ul id="ritulas-edit-list" class="todo-list"></ul>
+        <form id="ritulas-form" class="ritulas-editor-row">
+          <input id="ritulas-input" aria-label="Legg til ny oppgave" placeholder="Legg til ny oppgave" maxlength="180" required>
+          <button type="submit" aria-label="Legg til oppgave" title="Legg til oppgave"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </form>
+      </dialog>
+    </section>
+    <section id="bear-screen" aria-label="A message from the Bear" hidden>
+      <header class="banner screen-banner">
+        <img src="./bear-banner-olive.jpg" alt="A message from the Bear" width="1152" height="478">
+      </header>
+      <div class="bear-content">
+        <p id="bear-status" class="status-message" role="status"></p>
+        <div id="bear-messages" class="bear-messages" role="region" aria-label="Beskjeder fra bjørnen" tabindex="0" hidden></div>
+        <div id="bear-actions" class="screen-actions" hidden></div>
+        <p id="bear-heart-status" class="status-message" role="status"></p>
+        <div id="bear-navigation" class="bear-navigation" role="img" hidden></div>
+      </div>
+    </section>
+  </main>
+  <div id="ritulas-finale" class="ritulas-finale" role="status" lang="en" hidden>
+    <div class="ritulas-finale-card">
+      <strong>Daily Magic Complete!</strong>
+      <p>You finished every ritual today.</p>
+    </div>
+    <span aria-hidden="true">🦄</span>
+  </div>
+  <div id="quest-cheer" class="quest-cheer" role="status" aria-live="polite" hidden></div>
+<dialog class="motivation-overlay" id="motivation-overlay" aria-label="Motivasjon"><div class="motivation-card" role="button" tabindex="0" aria-label="Lukk motivasjon" aria-describedby="motivation-message" autofocus><p id="motivation-message"></p></div></dialog>
+  <div class="bottom-menu-backdrop" aria-hidden="true"></div>
+  <div class="bottom-menu" id="bottom-menu" hidden>
+    <nav aria-label="Hovedmeny">
+      <a href="#house" data-screen-link="house" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M4 11 11 5l7 6v9H4z"/><path d="m2 12 9-8 9 8M5 10v10h12v-7M9 20v-5h4v5m8-17v5m-2.5-2.5h5"/></svg><span>Home Magic</span></a>
+      <a href="#todo" data-screen-link="todo" aria-current="page" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="m15 3 1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/><path d="m4 20 8-8m-7-8v4M3 6h4m12 9v4m-2-2h4"/></svg><span>My Quests</span></a>
+      <a href="#ritulas" data-screen-link="ritulas" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 17a7 7 0 0 1 14 0z"/><path d="M2 17h20M5 21h14M12 4v3M4 9l2 2m13-7v6m-3-3h6"/></svg><span>Ritulas</span></a>
+      <a href="#bear" data-screen-link="bear" lang="en"><span class="bear-menu-art" aria-hidden="true"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 9a3 3 0 1 1 4-4 9 9 0 0 1 6 0 3 3 0 1 1 4 4c1 2 1 4 0 5H5c-1-1-1-3 0-5Z"/><path d="M9 9h.01M15 9h.01"/><rect x="6" y="13" width="12" height="8" rx="1.5" fill="var(--icon-fill)"/><path d="m7 14 5 4 5-4"/></svg><svg class="bear-unread-envelope" viewBox="0 0 16 16" focusable="false"><rect x="1.5" y="3.5" width="13" height="9" rx="2"/><path d="m2.5 5 5.5 4 5.5-4"/></svg></span><span>Bear Mail</span></a>
+    </nav>
+  </div>
+</body>
+</html>
