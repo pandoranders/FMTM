@@ -54,15 +54,185 @@
   let todoBusy = false;
   let todoRequest = 0;
 
+  const ritulas = byId("ritulas-screen");
+  const ritulasManager = byId("ritulas-manager");
+  const ritulasList = byId("ritulas-list");
+  const ritulasForm = byId("ritulas-form");
+  const ritulasInput = byId("ritulas-input");
+  const ritualCalendar = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Oslo", year: "numeric", month: "numeric", day: "numeric",
+    hour: "numeric", hourCycle: "h23"
+  });
+  let ritualItems = [];
+  let ritualReady = false;
+  let ritualBusy = false;
+  let ritualRequest = 0;
+  let ritualRenderedDay;
+  let ritualCelebratedDay;
+  let ritualFinaleTimer;
+
+  function ritualDay(now = new Date()) {
+    const { year, month, day, hour } = Object.fromEntries(
+      ritualCalendar.formatToParts(now).map(({ type, value }) => [type, value])
+    );
+    return new Date(Date.UTC(+year, month - 1, day - (hour < 2 ? 1 : 0))).toISOString().slice(0, 10);
+  }
+
+  function renderRitulas() {
+    ritualRenderedDay = ritualDay();
+    const locked = !ritualReady || ritualBusy;
+    byId("ritulas-edit").disabled = !ritualReady;
+    ritulasForm.querySelector("button").disabled = locked;
+    byId("ritulas-empty").hidden = !ritualReady || ritualItems.length > 0;
+    byId("ritulas-done").hidden = !ritualReady || !ritualItems.length ||
+      !ritualItems.every(item => item.completed_on === ritualRenderedDay);
+
+    ritulasList.replaceChildren(...ritualItems.map(item => {
+      const row = document.createElement("li");
+      const label = document.createElement("label");
+      label.className = "task-label";
+      const checkbox = document.createElement("input");
+      checkbox.className = "task-checkbox";
+      checkbox.type = "checkbox";
+      checkbox.checked = item.completed_on === ritualRenderedDay;
+      checkbox.disabled = locked;
+      const title = document.createElement("span");
+      title.textContent = item.title;
+      label.append(checkbox, makeHeart(), title);
+      row.append(label);
+      checkbox.addEventListener("change", async () => {
+        const day = ritualDay();
+        const done = checkbox.checked;
+        if (await saveRitula(() => client.from("ritulas")
+          .update({ completed_on: done ? day : null }).eq("id", item.id).select().single())) {
+          if (!ritulas.hidden) ritulasList.querySelectorAll("input")[ritualItems.findIndex(task => task.id === item.id)]?.focus();
+          if (done && !ritulas.hidden && day === ritualDay()) {
+            const allDone = ritualItems.every(task => task.completed_on === day);
+            if (allDone && ritualCelebratedDay !== day &&
+                localStorage.getItem("fmtm-ritulas-finale") !== day) {
+              ritualCelebratedDay = day;
+              localStorage.setItem("fmtm-ritulas-finale", day);
+              showRitulasFinale();
+            } else celebrateQuest("ritulas");
+          }
+        }
+      });
+      return row;
+    }));
+
+    byId("ritulas-edit-list").replaceChildren(...ritualItems.map(item => {
+      const row = document.createElement("li");
+      const editor = document.createElement("form");
+      editor.className = "ritulas-editor-row";
+      const field = document.createElement("input");
+      field.value = item.title;
+      field.required = true;
+      field.maxLength = 180;
+      field.setAttribute("aria-label", "Rediger " + item.title);
+      const save = document.createElement("button");
+      save.textContent = "Lagre";
+      save.disabled = locked;
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "Slett";
+      remove.setAttribute("aria-label", "Slett " + item.title);
+      remove.disabled = locked;
+      editor.append(field, save, remove);
+      editor.addEventListener("submit", event => {
+        event.preventDefault();
+        const title = field.value.trim();
+        if (title && title !== item.title) saveRitula(() => client.from("ritulas")
+          .update({ title }).eq("id", item.id).select().single());
+      });
+      remove.addEventListener("click", () => saveRitula(() => client.from("ritulas")
+        .delete().eq("id", item.id).select().single(), true));
+      row.append(editor);
+      return row;
+    }));
+  }
+
+  async function loadRitulas() {
+    if (ritualBusy) return;
+    const request = ++ritualRequest;
+    const { data, error } = await client.from("ritulas").select().order("created_at").order("id");
+    if (request !== ritualRequest) return;
+    ritualReady = !error;
+    if (!error) ritualItems = data;
+    message("ritulas-status", error ? "Kunne ikke hente daglige oppgaver." : "", Boolean(error));
+    renderRitulas();
+  }
+
+  async function saveRitula(write, remove = false) {
+    if (!activeUser || !ritualReady || ritualBusy) return false;
+    ritualBusy = true;
+    const request = ++ritualRequest;
+    const status = ritulasManager.open ? "ritulas-edit-status" : "ritulas-status";
+    message(status, "");
+    try {
+      const { data, error } = await write();
+      if (request !== ritualRequest) return false;
+      if (error) throw error;
+      const index = ritualItems.findIndex(item => item.id === data.id);
+      if (remove) ritualItems = ritualItems.filter(item => item.id !== data.id);
+      else if (index < 0) ritualItems.push(data);
+      else ritualItems[index] = data;
+      return true;
+    } catch {
+      if (request === ritualRequest) message(status, "Kunne ikke lagre endringen. Prøv igjen.", true);
+      return false;
+    } finally {
+      if (request === ritualRequest) {
+        ritualBusy = false;
+        renderRitulas();
+      }
+    }
+  }
+
+  function showRitulasFinale() {
+    clearTimeout(questBubbleTimer);
+    byId("quest-cheer").hidden = true;
+    clearTimeout(ritualFinaleTimer);
+    byId("ritulas-finale").hidden = false;
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) rainQuestConfetti("finale");
+    ritualFinaleTimer = setTimeout(() => { byId("ritulas-finale").hidden = true; }, 3800);
+  }
+
+  byId("ritulas-edit").addEventListener("click", () => ritulasManager.showModal());
+  ritulasForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const title = ritulasInput.value.trim();
+    if (title && await saveRitula(() => client.from("ritulas").insert({ title }).select().single())) {
+      ritulasForm.reset();
+      if (ritulasManager.open) ritulasInput.focus();
+    }
+  });
+
+  function refreshRitualDay() {
+    if (!ritulas.hidden && ritualRenderedDay !== ritualDay()) renderRitulas();
+  }
+  setInterval(refreshRitualDay, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && activeUser && !ritulas.hidden) {
+      refreshRitualDay();
+      loadRitulas();
+    }
+  });
+
   function showScreen() {
     if (recoveringPassword || !activeUser) return;
     const requested = location.hash.slice(1);
     const screen = screenLinks.some(link => link.dataset.screenLink === requested) ? requested : "todo";
+    const previous = document.documentElement.dataset.screen;
     document.documentElement.dataset.screen = screen;
+    ritulas.hidden = screen !== "ritulas";
+    if (ritulas.hidden) {
+      ritulasManager.close();
+      byId("ritulas-finale").hidden = true;
+    }
     byId("house-banner").hidden = screen !== "house";
     byId("app-content").hidden = screen !== "house";
     byId("todo-screen").hidden = screen !== "todo";
-    if (screen !== "todo") {
+    if (screen !== previous) {
       byId("quest-cheer").hidden = true;
       document.querySelectorAll(".quest-confetti").forEach(layer => layer.remove());
     }
@@ -76,6 +246,7 @@
       getComputedStyle(document.documentElement).getPropertyValue("--backdrop").trim();
     window.scrollTo(0, 0);
     if (screen === "todo") loadTodo();
+    if (screen === "ritulas") loadRitulas();
     if (screen === "bear") loadBearMessages();
     else checkBearUnread();
   }
@@ -298,10 +469,10 @@
   let lastQuestCheer = -1;
   let questBubbleTimer;
 
-  function celebrateQuest() {
+  function celebrateQuest(mode = "quest") {
     const bubble = byId("quest-cheer");
-    let index = Math.floor(Math.random() * (questCheers.length - 1));
-    if (index >= lastQuestCheer) index++;
+    let index = Math.floor(Math.random() * (questCheers.length - (lastQuestCheer < 0 ? 0 : 1)));
+    if (lastQuestCheer >= 0 && index >= lastQuestCheer) index++;
     lastQuestCheer = index;
     clearTimeout(questBubbleTimer);
     bubble.textContent = questCheers[index];
@@ -316,16 +487,19 @@
       { transform: "translateY(0)", opacity: 1 }
     ], { duration: reduced ? 120 : 540 });
     questBubbleTimer = setTimeout(() => { bubble.hidden = true; }, 2200);
-    if (reduced) return;
+    if (!reduced) rainQuestConfetti(mode);
+  }
 
+  function rainQuestConfetti(mode) {
     const layer = document.createElement("div");
     layer.className = "celebration quest-confetti";
     layer.setAttribute("aria-hidden", "true");
     document.body.append(layer);
     const colors = ["#a451d9", "#ed83bd", "#ffd65b", "#fff4bc", "#77d7c8", "#ffffff"];
-    const rare = Math.random() < .05;
+    const rare = mode === "quest" && Math.random() < .05;
     const symbol = rare ? String.fromCodePoint(Math.random() < .5 ? 0x1f43e : 0x1f984) : "";
-    for (let i = 0; i < (rare ? 42 : 70); i++) {
+    const count = { quest: rare ? 42 : 70, ritulas: 22, finale: 110 }[mode];
+    for (let i = 0; i < count; i++) {
       const piece = document.createElement("span");
       piece.className = "quest-confetti-piece";
       piece.style.left = Math.random() * 100 + "%";
@@ -855,6 +1029,7 @@
     motivationTimer = window.setTimeout(hideMotivation, 6500);
   }
   byId("motivation-button").addEventListener("click", showMotivation);
+  byId("ritulas-motivation").addEventListener("click", showMotivation);
   motivationOverlay.firstElementChild.addEventListener("click", hideMotivation);
   motivationOverlay.firstElementChild.addEventListener("keydown", event => {
     if (event.key === "Enter" || event.key === " ") {
@@ -957,6 +1132,9 @@
       byId("house-banner").hidden = false;
       byId("app-content").hidden = true;
       byId("todo-screen").hidden = true;
+      ritulas.hidden = true;
+      ritulasManager.close();
+      byId("ritulas-finale").hidden = true;
       byId("bear-screen").hidden = true;
       byId("bottom-menu").hidden = true;
     }
@@ -967,6 +1145,12 @@
       activeUser = null;
       readBearId = undefined;
       setBearUnread(false);
+      ++ritualRequest;
+      ritualItems = [];
+      ritualReady = false;
+      ritualBusy = false;
+      ritulasForm.reset();
+      renderRitulas();
       ++todoRequest;
       todoItems = [];
       todoReady = false;
