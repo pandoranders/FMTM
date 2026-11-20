@@ -29,7 +29,7 @@ button, summary, input[type="checkbox"] { cursor: pointer; }
 .room-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1rem, 5vw, 3rem); }
 #app-content, .todo-content { padding: clamp(1.3rem, 4vw, 2.15rem) clamp(1rem, 4.5vw, 2.4rem) 0; }
 .room { margin: 0 0 1.15rem; }
-.room h2, .todo-heading, .bear-messages h2 { margin: 0 0 .2rem; font: 700 clamp(1.5rem, 4.1vw, 2rem)/1.1 "Caveat", cursive; }
+.room h2, .todo-heading { margin: 0 0 .2rem; font: 700 clamp(1.5rem, 4.1vw, 2rem)/1.1 "Caveat", cursive; }
 .task-list { list-style: none; margin: 0; padding: 0; }
 .task { min-height: 2.35rem; }
 .task-child { margin-inline-start: 2.1rem; min-height: 2.05rem; font-size: .91em; }
@@ -360,6 +360,7 @@ html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"]) .sh
 }
 .bear-messages h2 {
   margin: 0 0 .75rem;
+  font: 700 48px/1.05 "Caveat", cursive;
 }
 .bear-messages p { margin: 0; font-size: 22px; line-height: 1.5; white-space: pre-wrap; }
 .bear-content:has(.bear-navigation:not([hidden])) article { padding-bottom: 4.5rem; }
