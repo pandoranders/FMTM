@@ -996,20 +996,31 @@
     "TADAAA! Snart bor du i ditt eget mesterverk!"
 ];
   const motivationOverlay = byId("motivation-overlay");
-  let lastMotivation = -1;
+  const ritualMotivationPhrases = [
+    "SMÅ SEIRE! Ett kryss er en god start.",
+    "RUTINEMAGI! Litt gjort i dag gjør morgendagen lettere.",
+    "HEIA DEG! Gjør én liten ting for deg selv nå.",
+    "RO NED! Ta et glass vann og fortsett i ditt tempo.",
+    "GODT NOK! Dagens rutine trenger ingen perfekt gjennomføring.",
+    "YES! En hverdagsoppgave mindre å holde i hodet.",
+    "LILLE PAUSE! Strekk på skuldrene før neste oppgave.",
+    "SE PÅ DEG! Du bygger gode vaner, ett kryss om gangen."
+  ];
+  const lastMotivation = new Map();
   let motivationTimer;
   function hideMotivation() {
     clearTimeout(motivationTimer);
     if (motivationOverlay.open) motivationOverlay.close();
     motivationOverlay.querySelectorAll(".celebration").forEach(layer => layer.remove());
   }
-  function showMotivation() {
+  function showMotivation(phrases) {
     clearTimeout(motivationTimer);
     // Choose uniformly among every phrase except the one just shown.
-    let index = Math.floor(Math.random() * (motivationPhrases.length - (lastMotivation < 0 ? 0 : 1)));
-    if (lastMotivation >= 0 && index >= lastMotivation) index++;
-    lastMotivation = index;
-    const text = motivationPhrases[index];
+    const previous = lastMotivation.get(phrases) ?? -1;
+    let index = Math.floor(Math.random() * (phrases.length - (previous < 0 ? 0 : 1)));
+    if (previous >= 0 && index >= previous) index++;
+    lastMotivation.set(phrases, index);
+    const text = phrases[index];
     const split = text.indexOf("!") + 1;
     const heading = document.createElement("strong");
     heading.textContent = text.slice(0, split);
@@ -1031,8 +1042,8 @@
     celebrateHeart({ x: window.scrollX + window.innerWidth / 2, y: window.scrollY + window.innerHeight * .48 }, true);
     motivationTimer = window.setTimeout(hideMotivation, 6500);
   }
-  byId("motivation-button").addEventListener("click", showMotivation);
-  byId("ritulas-motivation").addEventListener("click", showMotivation);
+  byId("motivation-button").addEventListener("click", () => showMotivation(motivationPhrases));
+  byId("ritulas-motivation").addEventListener("click", () => showMotivation(ritualMotivationPhrases));
   motivationOverlay.firstElementChild.addEventListener("click", hideMotivation);
   motivationOverlay.firstElementChild.addEventListener("keydown", event => {
     if (event.key === "Enter" || event.key === " ") {
