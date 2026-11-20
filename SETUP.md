@@ -32,3 +32,7 @@ Commit and push the repository to GitHub. If GitHub Pages is enabled, configure 
 - The shared todo list is stored in Supabase and broadcasts updates to other open sessions using the same account.
 - The old browser-only tasks are not uploaded automatically.
 
+
+## The Ritulas
+
+Run `supabase-ritulas.sql` once in the Supabase SQL Editor before enabling The Ritulas in the live app. It adds the recurring task list and uses the same account policy as My Quests. The app treats a completion as current only if its stored date matches the daily cycle in Europe/Oslo, which starts at 02:00.

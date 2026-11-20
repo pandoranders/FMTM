@@ -147,7 +147,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
 .bottom-menu { bottom: var(--menu-offset); }
 .bottom-menu nav {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   min-height: var(--menu-height);
   padding: 5px;
   border-radius: 999px;
@@ -528,3 +528,84 @@ button, a, label { touch-action: manipulation; }
 .bear-unread-envelope path { fill: none; }
 .has-unread-mail .bear-unread-envelope,
 .bear-unread-envelope.is-popping { display: block; }
+
+html[data-screen="ritulas"] {
+  --backdrop: #f4b58e;
+  --page: #fff1df;
+  --ink: #58304f;
+  --accent: #783b53;
+  --line: #dba885;
+  --menu-active: #783b53;
+}
+[data-screen-link="ritulas"] .menu-icon { --icon-fill: #eaa541; }
+#ritulas-screen { display: flex; flex-direction: column; min-height: max(0px, calc(100dvh - var(--fab-clearance) - 24px)); }
+#ritulas-list { --heart: #f6b995; --heart-edge: #a14864; }
+#ritulas-list .task-checkbox:checked + .heart .heart-shape { fill: var(--heart-edge); }
+#ritulas-screen .todo-list > li { border-color: var(--line); }
+#ritulas-screen .screen-actions button {
+  min-width: var(--action-height);
+  width: var(--action-height);
+  background: #fff;
+}
+#ritulas-motivation { font-size: 28px; line-height: 1; }
+#ritulas-done { color: var(--accent); font-weight: 700; }
+#ritulas-manager { background: var(--page); color: var(--ink); }
+#ritulas-manager h2 { margin-block-end: 12px; }
+.ritulas-editor-row { display: flex; gap: 6px; min-width: 0; }
+.ritulas-editor-row input {
+  flex: 1;
+  width: 0;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding-inline: 8px;
+}
+.ritulas-editor-row button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding-inline: 8px;
+  background: #fff;
+}
+#ritulas-edit-list > li { display: block; }
+html[data-screen="ritulas"] .quest-cheer { background: var(--page); color: var(--accent); }
+.ritulas-finale {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ritulas-finale strong {
+  max-width: calc(100% - 32px);
+  padding: 16px 24px;
+  border: 3px solid white;
+  border-radius: 24px;
+  background: #fff1df;
+  color: #58304f;
+  text-align: center;
+  font: 700 clamp(2.35rem, 10vw, 5rem)/1.05 Caveat, cursive;
+  animation: ritulas-finale-in .65s both;
+}
+.ritulas-finale span {
+  position: absolute;
+  bottom: calc(var(--menu-offset) + var(--menu-height) + 10px);
+  left: 0;
+  font-size: 64px;
+  animation: ritulas-gallop 2.9s linear both;
+}
+@keyframes ritulas-finale-in {
+  from { opacity: 0; transform: scale(.55); }
+  55% { opacity: 1; transform: scale(1.08); }
+  75% { transform: scale(.97); }
+  to { transform: scale(1); }
+}
+@keyframes ritulas-gallop {
+  from { transform: translateX(calc(100vw + 80px)) scaleX(-1); }
+  to { transform: translateX(-100px) scaleX(-1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ritulas-finale strong { animation: none; }
+  .ritulas-finale span { display: none; }
+}
