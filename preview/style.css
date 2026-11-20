@@ -586,6 +586,7 @@ html[data-screen="ritulas"] {
 #ritulas-manager button svg { width: 20px; height: 20px; }
 #ritulas-edit-list > li { display: block; padding-block: 10px; }
 html[data-screen="ritulas"] .quest-cheer { background: var(--page); color: var(--accent); }
+html[data-screen="ritulas"] .quest-cheer::after { background: inherit; }
 .ritulas-finale::before {
   content: "";
   position: absolute;
