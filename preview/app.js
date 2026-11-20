@@ -249,7 +249,15 @@
       getComputedStyle(document.documentElement).getPropertyValue("--backdrop").trim();
     window.scrollTo(0, 0);
     if (screen === "todo") loadTodo();
-    if (screen === "ritulas") loadRitulas();
+    if (screen === "ritulas") loadRitulas().then(() => {
+      const url = new URL(location.href);
+      if (!url.searchParams.has("test-finale") || !activeUser || ritulas.hidden || !ritualReady) return;
+      url.searchParams.delete("test-finale");
+      history.replaceState(history.state, "", url);
+      ritualCelebratedDay = undefined;
+      localStorage.removeItem("fmtm-ritulas-finale");
+      if (!byId("ritulas-done").hidden) showRitulasFinale();
+    });
     if (screen === "bear") loadBearMessages();
     else checkBearUnread();
   }
