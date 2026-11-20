@@ -11,10 +11,10 @@
   <script defer src="./pwa.js?v=fresh-assets"></script>
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=ritulas">
+  <link rel="stylesheet" href="./style.css?v=daily-rituals-live">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
-  <script defer src="./app.js?v=ritulas"></script>
+  <script defer src="./app.js?v=daily-rituals-live"></script>
 </head>
 <body>
   <main class="shell">
@@ -126,12 +126,12 @@
       </form>
     </section>
     <section id="ritulas-screen" aria-labelledby="ritulas-heading" hidden>
-      <header class="banner screen-banner"><img src="./ritulas-banner.webp" alt=""></header>
+      <header class="banner screen-banner"><img src="./ritulas-banner-simple.webp?v=storybook" alt=""></header>
       <div class="todo-content">
-        <h2 class="todo-heading" id="ritulas-heading" lang="en">The Ritulas</h2>
+        <h2 class="todo-heading" id="ritulas-heading" lang="en">My Daily Rituals</h2>
         <p id="ritulas-status" class="status-message" role="status"></p>
         <p id="ritulas-empty" hidden>Ingen daglige oppgaver ennå.</p>
-        <p id="ritulas-done" role="status" lang="en" hidden>All done for today!</p>
+        <p id="ritulas-done" role="status" lang="en" hidden><strong>All done for today!</strong><span>You finished every ritual.</span></p>
         <ul id="ritulas-list" class="todo-list"></ul>
       </div>
       <div class="screen-actions">
@@ -139,16 +139,16 @@
         <button id="ritulas-motivation" type="button" aria-label="Gi meg motivasjon!" aria-haspopup="dialog"><span aria-hidden="true">🦄</span></button>
       </div>
       <dialog id="ritulas-manager" class="task-manager" aria-labelledby="ritulas-manager-heading">
-        <div class="admin-header">
+        <div class="ritulas-manager-header">
           <h2 id="ritulas-manager-heading">Rediger daglige oppgaver</h2>
-          <form method="dialog"><button type="submit" class="icon-button" aria-label="Lukk">×</button></form>
+          <form method="dialog"><button type="submit" class="icon-button" aria-label="Lukk" title="Lukk" autofocus><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form>
         </div>
         <p id="ritulas-edit-status" class="status-message" role="status"></p>
-        <form id="ritulas-form" class="ritulas-editor-row">
-          <input id="ritulas-input" aria-label="Ny daglig oppgave" placeholder="Ny daglig oppgave" maxlength="180" required>
-          <button type="submit">Legg til</button>
-        </form>
         <ul id="ritulas-edit-list" class="todo-list"></ul>
+        <form id="ritulas-form" class="ritulas-editor-row">
+          <input id="ritulas-input" aria-label="Legg til ny oppgave" placeholder="Legg til ny oppgave" maxlength="180" required>
+          <button type="submit" aria-label="Legg til oppgave" title="Legg til oppgave"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </form>
       </dialog>
     </section>
     <section id="bear-screen" aria-label="A message from the Bear" hidden>
@@ -165,7 +165,10 @@
     </section>
   </main>
   <div id="ritulas-finale" class="ritulas-finale" role="status" lang="en" hidden>
-    <strong>Daily Magic Complete!</strong>
+    <div class="ritulas-finale-card">
+      <strong>I fucking did it!</strong>
+      <p>All my daily rituals are completed, done and gone!</p>
+    </div>
     <span aria-hidden="true">🦄</span>
   </div>
   <div id="quest-cheer" class="quest-cheer" role="status" aria-live="polite" hidden></div>
@@ -174,8 +177,8 @@
   <div class="bottom-menu" id="bottom-menu" hidden>
     <nav aria-label="Hovedmeny">
       <a href="#house" data-screen-link="house" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M4 11 11 5l7 6v9H4z"/><path d="m2 12 9-8 9 8M5 10v10h12v-7M9 20v-5h4v5m8-17v5m-2.5-2.5h5"/></svg><span>Home Magic</span></a>
-      <a href="#todo" data-screen-link="todo" aria-current="page" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="m15 3 1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/><path d="m4 20 8-8m-7-8v4M3 6h4m12 9v4m-2-2h4"/></svg><span>My Quests</span></a>
       <a href="#ritulas" data-screen-link="ritulas" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 17a7 7 0 0 1 14 0z"/><path d="M2 17h20M5 21h14M12 4v3M4 9l2 2m13-7v6m-3-3h6"/></svg><span>Ritulas</span></a>
+      <a href="#todo" data-screen-link="todo" aria-current="page" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="m15 3 1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/><path d="m4 20 8-8m-7-8v4M3 6h4m12 9v4m-2-2h4"/></svg><span>My Quests</span></a>
       <a href="#bear" data-screen-link="bear" lang="en"><span class="bear-menu-art" aria-hidden="true"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 9a3 3 0 1 1 4-4 9 9 0 0 1 6 0 3 3 0 1 1 4 4c1 2 1 4 0 5H5c-1-1-1-3 0-5Z"/><path d="M9 9h.01M15 9h.01"/><rect x="6" y="13" width="12" height="8" rx="1.5" fill="var(--icon-fill)"/><path d="m7 14 5 4 5-4"/></svg><svg class="bear-unread-envelope" viewBox="0 0 16 16" focusable="false"><rect x="1.5" y="3.5" width="13" height="9" rx="2"/><path d="m2.5 5 5.5 4 5.5-4"/></svg></span><span>Bear Mail</span></a>
     </nav>
   </div>

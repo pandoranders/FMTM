@@ -29,7 +29,7 @@ button, summary, input[type="checkbox"] { cursor: pointer; }
 .room-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1rem, 5vw, 3rem); }
 #app-content, .todo-content { padding: clamp(1.3rem, 4vw, 2.15rem) clamp(1rem, 4.5vw, 2.4rem) 0; }
 .room { margin: 0 0 1.15rem; }
-.room h2, .todo-heading { margin: 0 0 .2rem; font: 700 clamp(1.5rem, 4.1vw, 2rem)/1.1 "Caveat", cursive; }
+.room h2, .todo-heading, .bear-messages h2 { margin: 0 0 .2rem; font: 700 clamp(1.5rem, 4.1vw, 2rem)/1.1 "Caveat", cursive; }
 .task-list { list-style: none; margin: 0; padding: 0; }
 .task { min-height: 2.35rem; }
 .task-child { margin-inline-start: 2.1rem; min-height: 2.05rem; font-size: .91em; }
@@ -200,7 +200,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
   background: white;
   pointer-events: auto;
 }
-:is(#app-content, #todo-screen) .screen-actions button,
+:is(#app-content, #todo-screen, #ritulas-screen) .screen-actions button,
 #todo-add {
   display: grid;
   place-items: center;
@@ -247,12 +247,12 @@ html[data-screen="bear"] {
 }
 html[data-screen="bear"] .bottom-menu nav { background: var(--page); }
 
-html:is([data-screen="todo"], [data-screen="bear"]) .shell {
+html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"]) .shell {
   min-height: max(0px, calc(100dvh - var(--fab-clearance) - 24px));
   padding-bottom: 0;
   display: flex;
 }
-#todo-screen, #bear-screen { flex: 1; min-width: 0; }
+#todo-screen, #bear-screen, #ritulas-screen { flex: 1; min-width: 0; }
 .screen-banner { background: var(--page); }
 .todo-content { width: 100%; padding-bottom: 24px; }
 .todo-heading { color: var(--accent); }
@@ -360,7 +360,6 @@ html:is([data-screen="todo"], [data-screen="bear"]) .shell {
 }
 .bear-messages h2 {
   margin: 0 0 .75rem;
-  font: 700 48px/1.05 "Caveat", cursive;
 }
 .bear-messages p { margin: 0; font-size: 22px; line-height: 1.5; white-space: pre-wrap; }
 .bear-content:has(.bear-navigation:not([hidden])) article { padding-bottom: 4.5rem; }
@@ -537,20 +536,34 @@ html[data-screen="ritulas"] {
   --line: #dba885;
   --menu-active: #783b53;
 }
-[data-screen-link="ritulas"] .menu-icon { --icon-fill: #eaa541; }
 #ritulas-screen { display: flex; flex-direction: column; min-height: max(0px, calc(100dvh - var(--fab-clearance) - 24px)); }
-#ritulas-list { --heart: #f6b995; --heart-edge: #a14864; }
+#ritulas-list { --heart: #f6b995; --heart-edge: #783b53; }
 #ritulas-list .task-checkbox:checked + .heart .heart-shape { fill: var(--heart-edge); }
 #ritulas-screen .todo-list > li { border-color: var(--line); }
-#ritulas-screen .screen-actions button {
-  min-width: var(--action-height);
-  width: var(--action-height);
-  background: #fff;
-}
 #ritulas-motivation { font-size: 28px; line-height: 1; }
-#ritulas-done { color: var(--accent); font-weight: 700; }
+#ritulas-done {
+  margin: 18px 0 24px;
+  padding: clamp(16px, 4vw, 28px);
+  border-radius: 20px;
+  background: var(--accent);
+  color: #fff1df;
+  text-align: center;
+}
+#ritulas-done strong {
+  display: block;
+  font: 700 clamp(2rem, 7vw, 3.5rem)/1.05 Caveat, cursive;
+}
+#ritulas-done span { display: block; margin-top: 6px; }
 #ritulas-manager { background: var(--page); color: var(--ink); }
-#ritulas-manager h2 { margin-block-end: 12px; }
+.ritulas-manager-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.ritulas-manager-header .icon-button { width: 44px; }
+#ritulas-form { margin-top: 16px; }
 .ritulas-editor-row { display: flex; gap: 6px; min-width: 0; }
 .ritulas-editor-row input {
   flex: 1;
@@ -563,11 +576,23 @@ html[data-screen="ritulas"] {
 .ritulas-editor-row button {
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding-inline: 8px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  padding: 0;
   background: #fff;
 }
-#ritulas-edit-list > li { display: block; }
+#ritulas-manager button svg { width: 20px; height: 20px; }
+#ritulas-edit-list > li { display: block; padding-block: 10px; }
 html[data-screen="ritulas"] .quest-cheer { background: var(--page); color: var(--accent); }
+html[data-screen="ritulas"] .quest-cheer::after { background: inherit; }
+.ritulas-finale::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #321b2d9c;
+}
+body:has(.ritulas-finale:not([hidden])) .quest-confetti { z-index: 1002; }
 .ritulas-finale {
   position: fixed;
   inset: 0;
@@ -577,17 +602,20 @@ html[data-screen="ritulas"] .quest-cheer { background: var(--page); color: var(-
   pointer-events: none;
   overflow: hidden;
 }
-.ritulas-finale strong {
+.ritulas-finale-card {
+  position: relative;
   max-width: calc(100% - 32px);
-  padding: 16px 24px;
+  padding: clamp(24px, 6vw, 48px);
   border: 3px solid white;
   border-radius: 24px;
   background: #fff1df;
   color: #58304f;
   text-align: center;
-  font: 700 clamp(2.35rem, 10vw, 5rem)/1.05 Caveat, cursive;
+  box-shadow: 0 24px 80px #321b2d73;
   animation: ritulas-finale-in .65s both;
 }
+.ritulas-finale strong { font: 700 clamp(2.8rem, 12vw, 6rem)/1 Caveat, cursive; }
+.ritulas-finale p { margin: 12px 0 0; font-weight: 700; }
 .ritulas-finale span {
   position: absolute;
   bottom: calc(var(--menu-offset) + var(--menu-height) + 10px);
@@ -606,6 +634,6 @@ html[data-screen="ritulas"] .quest-cheer { background: var(--page); color: var(-
   to { transform: translateX(-100px) scaleX(-1); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ritulas-finale strong { animation: none; }
+  .ritulas-finale-card { animation: none; }
   .ritulas-finale span { display: none; }
 }

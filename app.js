@@ -130,11 +130,14 @@
       field.maxLength = 180;
       field.setAttribute("aria-label", "Rediger " + item.title);
       const save = document.createElement("button");
-      save.textContent = "Lagre";
+      save.setAttribute("aria-label", "Lagre " + item.title);
+      save.title = "Lagre";
+      save.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg>';
       save.disabled = locked;
       const remove = document.createElement("button");
       remove.type = "button";
-      remove.textContent = "Slett";
+      remove.title = "Slett";
+      remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>';
       remove.setAttribute("aria-label", "Slett " + item.title);
       remove.disabled = locked;
       editor.append(field, save, remove);
@@ -194,7 +197,7 @@
     clearTimeout(ritualFinaleTimer);
     byId("ritulas-finale").hidden = false;
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) rainQuestConfetti("finale");
-    ritualFinaleTimer = setTimeout(() => { byId("ritulas-finale").hidden = true; }, 3800);
+    ritualFinaleTimer = setTimeout(() => { byId("ritulas-finale").hidden = true; }, 5200);
   }
 
   byId("ritulas-edit").addEventListener("click", () => ritulasManager.showModal());
@@ -498,7 +501,7 @@
     const colors = ["#a451d9", "#ed83bd", "#ffd65b", "#fff4bc", "#77d7c8", "#ffffff"];
     const rare = mode === "quest" && Math.random() < .05;
     const symbol = rare ? String.fromCodePoint(Math.random() < .5 ? 0x1f43e : 0x1f984) : "";
-    const count = { quest: rare ? 42 : 70, ritulas: 22, finale: 110 }[mode];
+    const count = { quest: rare ? 42 : 70, ritulas: 22, finale: 150 }[mode];
     for (let i = 0; i < count; i++) {
       const piece = document.createElement("span");
       piece.className = "quest-confetti-piece";
@@ -514,9 +517,9 @@
         { transform: "translateY(-30px) rotate(0deg)", opacity: 1 },
         { opacity: 1, offset: .8 },
         { transform: "translate(" + drift + "px, " + (innerHeight + 50) + "px) rotate(" + (360 + Math.random() * 540) + "deg)", opacity: 0 }
-      ], { duration: 1800 + Math.random() * 900, delay: Math.random() * 350, easing: "linear", fill: "both" });
+      ], { duration: 1800 + Math.random() * 900, delay: Math.random() * (mode === "finale" ? 1400 : 350), easing: "linear", fill: "both" });
     }
-    setTimeout(() => layer.remove(), 3100);
+    setTimeout(() => layer.remove(), mode === "finale" ? 4200 : 3100);
   }
 
   function renderTodo() {
@@ -993,20 +996,31 @@
     "TADAAA! Snart bor du i ditt eget mesterverk!"
 ];
   const motivationOverlay = byId("motivation-overlay");
-  let lastMotivation = -1;
+  const ritualMotivationPhrases = [
+    "SMÅ SEIRE! Ett kryss er en god start.",
+    "RUTINEMAGI! Litt gjort i dag gjør morgendagen lettere.",
+    "HEIA DEG! Gjør én liten ting for deg selv nå.",
+    "RO NED! Ta et glass vann og fortsett i ditt tempo.",
+    "GODT NOK! Dagens rutine trenger ingen perfekt gjennomføring.",
+    "YES! En hverdagsoppgave mindre å holde i hodet.",
+    "LILLE PAUSE! Strekk på skuldrene før neste oppgave.",
+    "SE PÅ DEG! Du bygger gode vaner, ett kryss om gangen."
+  ];
+  const lastMotivation = new Map();
   let motivationTimer;
   function hideMotivation() {
     clearTimeout(motivationTimer);
     if (motivationOverlay.open) motivationOverlay.close();
     motivationOverlay.querySelectorAll(".celebration").forEach(layer => layer.remove());
   }
-  function showMotivation() {
+  function showMotivation(phrases) {
     clearTimeout(motivationTimer);
     // Choose uniformly among every phrase except the one just shown.
-    let index = Math.floor(Math.random() * (motivationPhrases.length - (lastMotivation < 0 ? 0 : 1)));
-    if (lastMotivation >= 0 && index >= lastMotivation) index++;
-    lastMotivation = index;
-    const text = motivationPhrases[index];
+    const previous = lastMotivation.get(phrases) ?? -1;
+    let index = Math.floor(Math.random() * (phrases.length - (previous < 0 ? 0 : 1)));
+    if (previous >= 0 && index >= previous) index++;
+    lastMotivation.set(phrases, index);
+    const text = phrases[index];
     const split = text.indexOf("!") + 1;
     const heading = document.createElement("strong");
     heading.textContent = text.slice(0, split);
@@ -1028,8 +1042,8 @@
     celebrateHeart({ x: window.scrollX + window.innerWidth / 2, y: window.scrollY + window.innerHeight * .48 }, true);
     motivationTimer = window.setTimeout(hideMotivation, 6500);
   }
-  byId("motivation-button").addEventListener("click", showMotivation);
-  byId("ritulas-motivation").addEventListener("click", showMotivation);
+  byId("motivation-button").addEventListener("click", () => showMotivation(motivationPhrases));
+  byId("ritulas-motivation").addEventListener("click", () => showMotivation(ritualMotivationPhrases));
   motivationOverlay.firstElementChild.addEventListener("click", hideMotivation);
   motivationOverlay.firstElementChild.addEventListener("keydown", event => {
     if (event.key === "Enter" || event.key === " ") {
