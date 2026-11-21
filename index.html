@@ -11,10 +11,11 @@
   <script defer src="./pwa.js?v=fresh-assets"></script>
   <title>From Mediocre To Magic</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=home-magic-heart-color">
+  <link rel="stylesheet" href="./style.css?v=spoils-progress">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./supabase-config.js"></script>
   <script defer src="./app.js?v=ritual-motivation-copy"></script>
+  <script defer src="./spoils.js?v=1"></script>
 </head>
 <body>
   <main class="shell">
@@ -122,7 +123,7 @@
       </div>
       <form class="todo-form screen-actions" id="todo-form">
         <input id="todo-input" aria-label="Legg til ny Quest" placeholder="Legg til ny Quest..." maxlength="180" autocomplete="off" required>
-        <button id="todo-add" type="submit" aria-label="Lagre oppgave" title="Lagre oppgave" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button id="todo-add" class="list-add" type="submit" aria-label="Lagre oppgave" title="Lagre oppgave" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
       </form>
     </section>
     <section id="ritulas-screen" aria-labelledby="ritulas-heading" hidden>
@@ -151,7 +152,35 @@
         </form>
       </dialog>
     </section>
-    <section id="bear-screen" aria-label="A message from the Bear" hidden>
+    <section id="shopping-screen" aria-labelledby="shopping-heading" hidden>
+      <header class="banner screen-banner">
+        <img src="./shopping-banner.jpg?v=basket-glow" alt="" width="1400" height="560">
+      </header>
+      <div class="todo-content">
+        <div class="shopping-list-header">
+          <h2 class="todo-heading" id="shopping-heading" lang="en">List of Spoils</h2>
+          <button class="text-button" id="shopping-clear" type="button" aria-haspopup="dialog" disabled>Tøm liste</button>
+        </div>
+        <p id="shopping-feedback" class="status-message" role="status"></p>
+        <ul id="shopping-list" class="todo-list"></ul>
+        <div class="todo-compose">
+          <p id="shopping-empty" class="todo-empty" role="status" hidden><strong>KLAR FOR HANDEL</strong><span>Legg til det du trenger.</span></p>
+        </div>
+      </div>
+      <form class="todo-form screen-actions" id="shopping-form">
+        <input id="shopping-input" aria-label="Legg til vare" placeholder="Legg til vare" maxlength="180" autocomplete="off" required>
+        <button id="shopping-add" class="list-add" type="submit" aria-label="Legg til vare" title="Legg til vare" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+      </form>
+      <dialog class="task-manager" id="shopping-clear-dialog" aria-labelledby="shopping-clear-title" aria-describedby="shopping-clear-description">
+        <h2 id="shopping-clear-title">Tømme handlelista?</h2>
+        <p id="shopping-clear-description">Alle varer i Spoils blir slettet.</p>
+        <form method="dialog" class="shopping-clear-actions">
+          <button class="text-button" type="submit" value="cancel" autofocus>Avbryt</button>
+          <button type="submit" value="confirm" class="primary">Tøm liste</button>
+        </form>
+      </dialog>
+    </section>
+    <section id="bear-screen" aria-label="Pawst" hidden>
       <header class="banner screen-banner">
         <img src="./bear-banner-olive.jpg" alt="A message from the Bear" width="1152" height="478">
       </header>
@@ -178,8 +207,9 @@
     <nav aria-label="Hovedmeny">
       <a href="#house" data-screen-link="house" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M4 11 11 5l7 6v9H4z"/><path d="m2 12 9-8 9 8M5 10v10h12v-7M9 20v-5h4v5m8-17v5m-2.5-2.5h5"/></svg><span>Home Magic</span></a>
       <a href="#ritulas" data-screen-link="ritulas" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 17a7 7 0 0 1 14 0z"/><path d="M2 17h20M5 21h14M12 4v3M4 9l2 2m13-7v6m-3-3h6"/></svg><span>Ritulas</span></a>
-      <a href="#todo" data-screen-link="todo" aria-current="page" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="m15 3 1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/><path d="m4 20 8-8m-7-8v4M3 6h4m12 9v4m-2-2h4"/></svg><span>My Quests</span></a>
-      <a href="#bear" data-screen-link="bear" lang="en"><span class="bear-menu-art" aria-hidden="true"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 9a3 3 0 1 1 4-4 9 9 0 0 1 6 0 3 3 0 1 1 4 4c1 2 1 4 0 5H5c-1-1-1-3 0-5Z"/><path d="M9 9h.01M15 9h.01"/><rect x="6" y="13" width="12" height="8" rx="1.5" fill="var(--icon-fill)"/><path d="m7 14 5 4 5-4"/></svg><svg class="bear-unread-envelope" viewBox="0 0 16 16" focusable="false"><rect x="1.5" y="3.5" width="13" height="9" rx="2"/><path d="m2.5 5 5.5 4 5.5-4"/></svg></span><span>Bear Mail</span></a>
+      <a href="#todo" data-screen-link="todo" aria-current="page" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="m15 3 1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/><path d="m4 20 8-8m-7-8v4M3 6h4m12 9v4m-2-2h4"/></svg><span>Quests</span></a>
+      <a href="#shopping" data-screen-link="shopping" lang="en"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M3 10h18l-2 10H5z"/><path d="M8 10l4-6 4 6M9 13v4m6-4v4"/></svg><span>Spoils</span></a>
+      <a href="#bear" data-screen-link="bear" lang="en"><span class="bear-menu-art" aria-hidden="true"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--icon-fill)" d="M5 9a3 3 0 1 1 4-4 9 9 0 0 1 6 0 3 3 0 1 1 4 4c1 2 1 4 0 5H5c-1-1-1-3 0-5Z"/><path d="M9 9h.01M15 9h.01"/><rect x="6" y="13" width="12" height="8" rx="1.5" fill="var(--icon-fill)"/><path d="m7 14 5 4 5-4"/></svg><svg class="bear-unread-envelope" viewBox="0 0 16 16" focusable="false"><rect x="1.5" y="3.5" width="13" height="9" rx="2"/><path d="m2.5 5 5.5 4 5.5-4"/></svg></span><span>Pawst</span></a>
     </nav>
   </div>
 </body>

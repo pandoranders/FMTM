@@ -142,13 +142,13 @@ html[data-screen] body { padding-bottom: var(--fab-clearance); }
   mask-image: linear-gradient(to top, #000, transparent);
 }
 .bottom-menu-backdrop:has(+ .bottom-menu[hidden]) { display: none; }
-html[data-screen="todo"] .bottom-menu-backdrop {
+html:is([data-screen="todo"], [data-screen="shopping"]) .bottom-menu-backdrop {
   height: calc(var(--menu-offset) + var(--menu-height) + 10px + var(--action-height) / 2);
 }
 .bottom-menu { bottom: var(--menu-offset); }
 .bottom-menu nav {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   min-height: var(--menu-height);
   padding: 5px;
   border-radius: 999px;
@@ -174,7 +174,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
   letter-spacing: 0;
   text-align: center;
   white-space: nowrap;
-  font-size: clamp(.625rem, 2.9vw, .8125rem);
+  font-size: clamp(.625rem, 2.6vw, .8125rem);
 }
 .menu-icon {
   --icon-fill: color-mix(in srgb, currentColor 28%, transparent);
@@ -202,7 +202,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
   pointer-events: auto;
 }
 :is(#app-content, #todo-screen, #ritulas-screen) .screen-actions button,
-#todo-add {
+.list-add {
   display: grid;
   place-items: center;
   height: var(--action-height);
@@ -215,7 +215,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
   padding: 0;
   box-shadow: 0 4px 16px #561b1530;
 }
-.screen-actions svg, #todo-add svg {
+.screen-actions svg, .list-add svg {
   width: 26px;
   height: 26px;
   fill: none;
@@ -228,7 +228,7 @@ html[data-screen="todo"] .bottom-menu-backdrop {
   font-size: 28px;
   line-height: 1;
 }
-.screen-actions button:disabled, #todo-add:disabled { opacity: .72; cursor: default; }
+.screen-actions button:disabled, .list-add:disabled { opacity: .72; cursor: default; }
 
 html[data-screen="todo"] {
   --backdrop: #BC78EA;
@@ -248,17 +248,17 @@ html[data-screen="bear"] {
 }
 html[data-screen="bear"] .bottom-menu nav { background: var(--page); }
 
-html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"]) .shell {
+html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"], [data-screen="shopping"]) .shell {
   min-height: max(0px, calc(100dvh - var(--fab-clearance) - 24px));
   padding-bottom: 0;
   display: flex;
 }
-#todo-screen, #bear-screen, #ritulas-screen { flex: 1; min-width: 0; }
+#todo-screen, #bear-screen, #ritulas-screen, #shopping-screen { flex: 1; min-width: 0; }
 .screen-banner { background: var(--page); }
 .todo-content { width: 100%; padding-bottom: 24px; }
 .todo-heading { color: var(--accent); }
-#todo-add { min-height: 44px; margin-top: 0; }
-#todo-add[aria-expanded="true"] { visibility: hidden; }
+.list-add { min-height: 44px; margin-top: 0; }
+.list-add[aria-expanded="true"] { visibility: hidden; }
 .todo-list { list-style: none; margin: 0; padding: 0; }
 .todo-list {
   --heart: #ce94e7;
@@ -268,7 +268,7 @@ html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"]) .sh
 .task-checkbox:checked + .heart + span { opacity: .75; text-decoration: line-through; }
 .todo-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .todo-form input { flex: 1 1 140px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
-#todo-screen { display: flex; flex-direction: column; }
+#todo-screen, #shopping-screen { display: flex; flex-direction: column; }
 .todo-content:has(.todo-empty:not([hidden])) {
   flex: 1;
   display: flex;
@@ -300,7 +300,7 @@ html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"]) .sh
 }
 .todo-form .primary { background: var(--accent); }
 .todo-form .icon-button:not(.primary):hover { background: #e7b5f2; }
-#todo-feedback:empty { display: none; }
+#todo-feedback:empty, #shopping-feedback:empty { display: none; }
 #bear-screen { display: flex; flex-direction: column; gap: 14px; background: var(--backdrop); }
 #bear-screen { gap: 0; }
 #bear-screen { border-radius: inherit; }
@@ -429,7 +429,7 @@ button, a, label { touch-action: manipulation; }
   padding-block: 6px;
 }
 .todo-remove { min-height: 44px; }
-#todo-form {
+:is(#todo-form, #shopping-form) {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -441,7 +441,7 @@ button, a, label { touch-action: manipulation; }
   background: white;
   pointer-events: auto;
 }
-#todo-form input {
+:is(#todo-form, #shopping-form) input {
   flex: 1;
   width: 0;
   min-width: 0;
@@ -450,8 +450,8 @@ button, a, label { touch-action: manipulation; }
   padding: 0;
   font-size: 16px;
 }
-#todo-form input::placeholder { color: #b9a7c1; opacity: 1; }
-#todo-form #todo-add {
+:is(#todo-form, #shopping-form) input::placeholder { color: #b9a7c1; opacity: 1; }
+:is(#todo-form, #shopping-form) .list-add {
   width: 44px;
   min-width: 44px;
   height: 44px;
@@ -460,7 +460,7 @@ button, a, label { touch-action: manipulation; }
   color: var(--ink);
 }
 
-#todo-form #todo-add:disabled { color: #b9a7c1; opacity: 1; }
+:is(#todo-form, #shopping-form) .list-add:disabled { color: #b9a7c1; opacity: 1; }
 
 .quest-cheer {
   position: fixed;
@@ -636,3 +636,28 @@ body:has(.ritulas-finale:not([hidden])) .quest-confetti { z-index: 1002; }
   .ritulas-finale-card { animation: none; }
   .ritulas-finale span { display: none; }
 }
+
+html[data-screen="shopping"] {
+  --backdrop: #A6B8D4;
+  --page: #E8EFF8;
+  --ink: #293D5B;
+  --accent: #35537D;
+  --menu-active: #40577C;
+  --line: #ADBFD8;
+}
+#shopping-list { --heart: #BDCCE3; --heart-edge: #40577C; }
+#shopping-list > li { border-color: var(--line); }
+.shopping-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.shopping-list-header #shopping-heading { display: block; }
+#shopping-clear { min-height: 44px; color: var(--accent); background: #D8E3F2; text-decoration: none; }
+#shopping-clear:disabled { opacity: .5; cursor: default; }
+.shopping-clear-actions .text-button:hover { background: #D8E3F2; }
+.shopping-clear-actions { display: flex; justify-content: flex-end; gap: 8px; }
+#shopping-form input::placeholder, #shopping-form #shopping-add:disabled { color: #607491; }
+html[data-screen="shopping"] .quest-cheer { background: var(--page); color: var(--accent); }
+html[data-screen="shopping"] .quest-cheer::after { background: inherit; }
