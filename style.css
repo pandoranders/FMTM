@@ -366,18 +366,25 @@ html:is([data-screen="todo"], [data-screen="bear"], [data-screen="ritulas"], [da
 .bear-navigation {
   position: absolute;
   inset: auto 0 1.25rem;
-  display: flex;
-  justify-content: center;
-  gap: .5rem;
+  height: 8px;
   pointer-events: none;
 }
+.bear-navigation-label { opacity: 0; }
 .bear-dot {
+  position: absolute;
+  left: calc(50% - 4px);
+  transform: translateX(calc(var(--dot-offset, 0) * (8px + .5rem))) scale(var(--dot-scale, 1));
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: rgb(255 255 255 / 42%);
 }
 .bear-dot.is-active { background: white; }
+@media (prefers-reduced-motion: reduce) {
+  .bear-dot { transform: none; }
+  .bear-navigation { display: flex; justify-content: center; gap: .5rem; }
+  .bear-dot { position: static; scale: var(--dot-scale, 1); }
+}
 .bear-admin { width: min(100%, 32rem); margin: 2rem auto; }
 .bear-admin textarea { width: 100%; padding: .75rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; resize: vertical; }
 
